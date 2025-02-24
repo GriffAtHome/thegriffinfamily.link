@@ -23,6 +23,7 @@ jobs:
         id: assume-role
         run: |
           ROLE_TO_ASSUME="arn:aws:iam::251374076386:role/GriffinFamily.Link.TF"
+          EXTERNAL_ID="GriffinFamily.Link.TF.ExternalID"
           CREDS=$(aws sts assume-role --role-arn $ROLE_TO_ASSUME --role-session-name GitHubActionsSession --output json)
           echo "AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r .Credentials.AccessKeyId)" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r .Credentials.SecretAccessKey)" >> $GITHUB_ENV
