@@ -9,22 +9,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code #Step to check out the repository code
+      - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up AWS CLI
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1 
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get install awscli
 
       - name: Assume Role
         id: assume-role
         run: |
-          ROLE_TO_ASSUME="arn:aws:iam::251374076386:role/GriffinFamily.Link.TF"
-          EXTERNAL_ID="GriffinFamily.Link.TF.ExternalID"
-          CREDS=$(aws sts assume-role --role-arn $ROLE_TO_ASSUME --role-session-name GitHubActionsSession --output json)
+          ROLE_TO_ASSUME="${{ secrets.AWS_ROLE_TO_ASSUME }}"
+          CREDS=$(aws sts assume-role --role-arn $ROLE_TO_ASSUME --role-session-name GitHubActionsSession --external-id $EXTERNAL_ID --output json)
           echo "AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r .Credentials.AccessKeyId)" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r .Credentials.SecretAccessKey)" >> $GITHUB_ENV
           echo "AWS_SESSION_TOKEN=$(echo $CREDS | jq -r .Credentials.SessionToken)" >> $GITHUB_ENV
@@ -33,6 +29,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.3.0  
+
       - name: Terraform Init
         run: terraform init
 
