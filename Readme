@@ -1,1 +1,95 @@
+                                  +------------------+
+                                  |                  |
+                 +------------->  | Route 53         |
+                 |                | (griffinfamily.link)
+                 |                |                  |
+                 |                +--------+---------+
+                 |                         |
+                 |                         v
+                 |                +--------+---------+
+Internet +-----> |                |                  |
+                 +------------->  | ALB              |
+                 |                | (www.griffinfamily.link)
+                 |                |                  |
+                 |                +--------+---------+
+                 |                         |
+                 v                         v
+        +--------+---------+      +----------------+----------------+
+        |                  |      |                                 |
+        | Internet Gateway |----->|  Virtual Private Cloud (VPC)    |
+        |                  |      |                                 |
+        +------------------+      |  +-------------+ +------------+ |
+                                  |  |             | |            | |
+                                  |  | Public      | | Public     | |
+                                  |  | Subnet 1    | | Subnet 2   | |
+                                  |  | (AZ-1)      | | (AZ-2)     | |
+                                  |  |             | |            | |
+                                  |  +------+------+ +------+-----+ |
+                                  |         |               |       |
+                                  |         v               v       |
+                                  |  +------+------+ +------+-----+ |
+                                  |  | NAT Gateway | | NAT Gateway| |
+                                  |  | 1           | | 2          | |
+                                  |  | (EIP-1)     | | (EIP-2)    | |
+                                  |  +------+------+ +------+-----+ |
+                                  |         |               |       |
+                                  |         v               v       |
+                                  |  +------+------+ +------+-----+ |
+                                  |  |             | |            | |
+                                  |  | Private     | | Private    | |
+                                  |  | Subnet 1    | | Subnet 2   | |
+                                  |  | (AZ-1)      | | (AZ-2)     | |
+                                  |  |             | |            | |
+                                  |  +------+------+ +------+-----+ |
+                                  |         |               |       |
+                                  +---------+---------------+-------+
+                                            |               |
+                                            v               v
+                                  +---------+---------------+-------+
+                                  |                                 |
+                                  |        EKS Cluster             |
+                                  |                                 |
+                                  |  +-------------+ +------------+ |
+                                  |  |             | |            | |
+                                  |  | Node Group  | | Node Group | |
+                                  |  | (AZ-1)      | | (AZ-2)     | |
+                                  |  |             | |            | |
+                                  |  +-------------+ +------------+ |
+                                  |                                 |
+                                  +---------------------------------+
+                                         |               |
+                                         v               v
+                                  +---------+---------------+-------+
+                                  |                                 |
+                                  |     Kubernetes Components       |
+                                  |                                 |
+                                  |  +-------------+ +------------+ |
+                                  |  | Nginx       | |            | |
+                                  |  | Ingress     | | ArgoCD     | |
+                                  |  | Controller  | |            | |
+                                  |  +------+------+ +------------+ |
+                                  |         |                       |
+                                  |         v                       |
+                                  |  +------+------+                |
+                                  |  | Your Web App |               |
+                                  |  | Pod(s)       |               |
+                                  |  +-------------+                |
+                                  |                                 |
+                                  +---------------------------------+
 
+
+Communication Flow
+User Request Flow:
+--> User requests www.griffinfamily.link/Resumes/Mike
+--> DNS resolves to the ALB IP address
+--> ALB forwards the request to the Kubernetes ingress controller
+--> Ingress routes the request to web application service
+--> Web app pods serve the content
+
+Deployment Flow:
+--> Push code to GitHub
+--> GitHub Actions builds a new container image
+--> Image is pushed to ECR
+--> Helm chart values are updated with the new image tag
+--> ArgoCD detects the change and updates the deployment
+--> Kubernetes rolls out the new version
