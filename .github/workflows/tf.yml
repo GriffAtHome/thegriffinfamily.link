@@ -1,13 +1,18 @@
-name: Terraform
-
+name: Infrastructure Deployment
+#Push and pull_request events are triggered for the main and dev branches, and only when changes are made to the infrastructure directory.
 on:
   push:
     branches:
       - main
+      - dev
+    paths:
+      - 'infrastructure/**'
   pull_request:
     branches:
       - main
-
+      - dev
+    paths:
+      - 'infrastructure/**'
 jobs:
   terraform:
     runs-on: ubuntu-latest
@@ -33,9 +38,29 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
+        working-directory: ./infrastructure
 
-      - name: Terraform Plan
-        run: terraform plan
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: ./infrastructure
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
+        #The following steps run the terraform plan and terraform apply commands for the dev and main branches, using the dev.tfvars and prod.tfvars files, respectively.
+      - name: Terraform Plan (Dev)
+        if: github.ref == 'refs/heads/dev'
+        run: terraform plan -var-file="env/dev.tfvars"
+        working-directory: ./infrastructure
+
+      - name: Terraform Plan (Prod)
+        if: github.ref == 'refs/heads/main'
+        run: terraform plan -var-file="env/prod.tfvars"
+        working-directory: ./infrastructure
+
+     # - name: Terraform Apply (Dev)
+     #   if: github.ref == 'refs/heads/dev'
+     #   run: terraform apply -var-file="env/dev.tfvars" -auto-approve
+     #   working-directory: ./infrastructure
+
+     # - name: Terraform Apply (Prod)
+     #   if: github.ref == 'refs/heads/main'
+     #   run: terraform apply -var-file="env/prod.tfvars" -auto-approve
+     #   working-directory: ./infrastructure
