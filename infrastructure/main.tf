@@ -22,7 +22,7 @@ terraform {
 }
 
 locals {
-  project_name = "griffinfamily.link-Resume"
+  project_name = "thegriffinfamily-link-Resume"
   environment  = var.environment
   common_tags = {
     Project     = local.project_name
