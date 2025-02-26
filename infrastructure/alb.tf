@@ -56,6 +56,33 @@ resource "aws_lb" "main" {
   )
 }
 
+resource "aws_lb_target_group" "main" {
+  name        = "${local.project_name}-tg"
+  port        = 8000  # The port the Flask application is running on
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
+  target_type = "ip"  # Use "ip" for EKS fargate pods
+
+  health_check {
+    enabled             = true
+    healthy_threshold   = 2
+    interval            = 30
+    matcher            = "200"
+    path               = "/"
+    port               = "traffic-port"
+    protocol           = "HTTP"
+    timeout            = 5
+    unhealthy_threshold = 2
+  }
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.project_name}-tg"
+    }
+  )
+}
+
 resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.main.arn
   port              = "443"
