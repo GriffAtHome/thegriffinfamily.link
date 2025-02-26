@@ -4,9 +4,9 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-    bucket = "my-terraform-state-bucket"
-    key    = "eks-infrastructure/terraform.tfstate"
-    region = "us-west-2"
+    bucket = "thegriffinfamily.link.resumeapp.tfstate-bucket"
+    key    = "resumeapp-eks-infrastructure/terraform.tfstate"
+    region = "us-east-1"
     }
   
   required_providers {
