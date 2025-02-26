@@ -1,6 +1,7 @@
 name: Infrastructure Deployment
 #Push and pull_request events are triggered for the main and dev branches, and only when changes are made to the infrastructure directory.
 on:
+  workflow_dispatch:  # This is a manual trigger
   push:
     branches:
       - main
