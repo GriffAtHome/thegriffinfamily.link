@@ -72,8 +72,3 @@ resource "aws_ecr_lifecycle_policy" "app_lifecycle" {
   })
 }
 
-# Output the repository URL
-output "ecr_repository_url" {
-  value = aws_ecr_repository.app.repository_url
-  description = "The URL of the ECR repository"
-}
