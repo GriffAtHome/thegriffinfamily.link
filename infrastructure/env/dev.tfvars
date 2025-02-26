@@ -11,6 +11,7 @@ availability_zone_1 = "us-east-1a"
 availability_zone_2 = "us-east-1b"
 
 #EKS variables
+kubernetes_version = "1.30"
 node_instance_types = ["t3.medium"] #EC2 instance types to use for EKS worker nodes"
 node_disk_size = 20 #Disk size in GiB for worker nodesDisk size in GiB for worker nodes
 node_desired_size = 2 #Desired number of worker nodes

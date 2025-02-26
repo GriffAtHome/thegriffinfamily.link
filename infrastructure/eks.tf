@@ -93,6 +93,11 @@ resource "aws_eks_node_group" "main" {
   instance_types = var.node_instance_types
   disk_size      = var.node_disk_size
   
+  launch_template {
+  name    = "${local.project_name}-node-template"
+  version = "$Latest"
+  }
+
   scaling_config {
     desired_size = var.node_desired_size
     max_size     = var.node_max_size
@@ -107,13 +112,22 @@ resource "aws_eks_node_group" "main" {
   # Use the latest EKS-optimized Amazon Linux 2 AMI
   ami_type = "AL2_x86_64"
 
+  # Ensure VPC CNI policy is attached
   depends_on = [
     aws_iam_role_policy_attachment.eks_worker_node_policy,
     aws_iam_role_policy_attachment.eks_cni_policy,
-    aws_iam_role_policy_attachment.eks_container_registry_policy
+    aws_iam_role_policy_attachment.eks_container_registry_policy,
+    aws_eks_cluster.main
   ]
+  
+  # Add required tags
+  tags = merge(
+    local.common_tags,
+    {
+      "kubernetes.io/cluster/${local.project_name}-${local.environment}" = "owned"
+    }
+  )
 
-  tags = local.common_tags
 }
 
 # Security group for EKS Cluster
