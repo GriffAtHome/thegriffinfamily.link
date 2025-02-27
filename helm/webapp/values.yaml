@@ -1,6 +1,6 @@
 replicaCount: 2
 
-image:
+image: 
   repository: thegriffinfamily-link-resume-repo
   tag: "latest"
   pullPolicy: IfNotPresent
