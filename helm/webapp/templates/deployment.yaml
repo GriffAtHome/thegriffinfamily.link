@@ -12,12 +12,12 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ include "webapp.name" . }}
+        {{- include "webapp.selectorLabels" . | nindent 6 }}
     spec:
       containers:
         - name: {{ .Chart.Name }}
           image: {{ .Values.image }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: Always  # Or IfNotPresent
           ports:
             - containerPort: 8000
           resources:
