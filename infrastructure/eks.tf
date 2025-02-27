@@ -213,3 +213,10 @@ resource "aws_security_group_rule" "eks_nodes_ingress_control_plane" {
   to_port                  = 10250
   type                     = "ingress"
 }
+
+#data sources
+data "aws_caller_identity" "current" {}
+
+data "aws_eks_cluster" "cluster" {
+  name = var.cluster_name
+}
