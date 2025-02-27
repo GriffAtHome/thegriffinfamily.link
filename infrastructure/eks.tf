@@ -83,6 +83,39 @@ resource "aws_eks_cluster" "main" {
   tags = local.common_tags
 }
 
+# Add Launch Template for EKS Node Group
+resource "aws_launch_template" "eks_node" {
+  name = "${local.project_name}-node-template"
+
+  block_device_mappings {
+    device_name = "/dev/xvda"
+
+    ebs {
+      volume_size = var.node_disk_size
+      volume_type = "gp3"
+    }
+  }
+
+  instance_type = var.node_instance_types[0]
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = merge(
+      local.common_tags,
+      {
+        Name = "${local.project_name}-${local.environment}-node"
+        "kubernetes.io/cluster/${local.project_name}-${local.environment}" = "owned"
+      }
+    )
+  }
+
+  user_data = base64encode(<<-EOF
+    #!/bin/bash
+    /etc/eks/bootstrap.sh ${aws_eks_cluster.main.name}
+    EOF
+  )
+}
+
 # EKS Node Group
 resource "aws_eks_node_group" "main" {
   cluster_name    = aws_eks_cluster.main.name
@@ -94,8 +127,8 @@ resource "aws_eks_node_group" "main" {
   disk_size      = var.node_disk_size
   
   launch_template {
-  name    = "${local.project_name}-node-template"
-  version = "$Latest"
+    name    = aws_launch_template.eks_node.name
+    version = aws_launch_template.eks_node.latest_version
   }
 
   scaling_config {
