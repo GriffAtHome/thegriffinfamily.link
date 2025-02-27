@@ -1,6 +1,6 @@
 replicaCount: 2
 
-image:
+image: 
   repository: 251374076386.dkr.ecr.us-east-1.amazonaws.com/thegriffinfamily-link-resume-repo
   tag: "latest"
   pullPolicy: IfNotPresent
