@@ -87,8 +87,3 @@ variable "node_min_size" {
   default     = 1
 }
 
-variable "cluster_name" {
-  description = "Name of the EKS cluster"
-  type        = string
-  default     = "${local.project_name}-${local.environment}" # cluster name
-}

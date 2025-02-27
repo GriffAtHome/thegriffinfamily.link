@@ -45,7 +45,7 @@ resource "helm_release" "aws_load_balancer_controller" {
 
   set {
     name  = "clusterName"
-    value = var.cluster_name
+    value = "${local.project_name}-${local.environment}" # cluster name
   }
 
   set {

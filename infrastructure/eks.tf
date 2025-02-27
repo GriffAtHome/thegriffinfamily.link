@@ -218,5 +218,5 @@ resource "aws_security_group_rule" "eks_nodes_ingress_control_plane" {
 data "aws_caller_identity" "current" {}
 
 data "aws_eks_cluster" "cluster" {
-  name = var.cluster_name
+  name = "${local.project_name}-${local.environment}" # cluster name
 }
