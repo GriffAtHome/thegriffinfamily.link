@@ -76,7 +76,8 @@ jobs:
         run: |
           helm upgrade --install webapp ./helm/webapp --namespace default \
             --set "ingress.annotations.alb\\.ingress\\.kubernetes\\.io/certificate-arn=arn:aws:acm:us-east-1:251374076386:certificate/b167d4f6-8d43-4bb3-8cc6-627e38a03dee" \
-            --set 'ingress.annotations.alb\\.ingress\\.kubernetes\\.io/listen-ports=[{\"HTTP\":80},{\"HTTPS\":443}]' \
+            --set "ingress.annotations.alb\\.ingress\\.kubernetes\\.io/listen-ports[0].HTTP=80" \
+            --set "ingress.annotations.alb\\.ingress\\.kubernetes\\.io/listen-ports[1].HTTPS=443" \
             --set ingress.annotations.alb\\.ingress\\.kubernetes\\.io/ssl-redirect='443'
 
       # Commits the changes to the Helm chart's values.yaml file and pushes the changes to the repository.
