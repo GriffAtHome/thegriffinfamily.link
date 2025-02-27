@@ -1,10 +1,10 @@
 replicaCount: 2
 
-image: 251374076386.dkr.ecr.us-east-1.amazonaws.com/thegriffinfamily-link-resume-repo:6bcdfef733d36b9c477bb781291595d2bd202daf
+image:
   repository: 251374076386.dkr.ecr.us-east-1.amazonaws.com/thegriffinfamily-link-resume-repo
-  tag: "latest"
+  tag: "6bcdfef733d36b9c477bb781291595d2bd202daf"
   pullPolicy: IfNotPresent
-
+  
 service:
   type: ClusterIP
   port: 80
@@ -20,7 +20,6 @@ ingress:
       paths:
         - path: /resumes/mike
           pathType: ImplementationSpecific
-  ingress:
   tls:
     - hosts:
         - www.thegriffinfamily.link
