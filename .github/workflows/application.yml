@@ -41,6 +41,10 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+      
+      - name: Fix Chart.yaml case sensitivity
+        run: |
+           mv helm/webapp/chart.yaml helm/webapp/Chart.yaml || echo "File already has correct name"
 
       - name: Build, tag, and push image to Amazon ECR
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'deploy' || github.event_name == 'push' || github.event_name == 'pull_request'
