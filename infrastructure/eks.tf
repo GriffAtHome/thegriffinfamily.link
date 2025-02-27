@@ -96,8 +96,6 @@ resource "aws_launch_template" "eks_node" {
     }
   }
 
-  instance_type = var.node_instance_types[0]
-
   tag_specifications {
     resource_type = "instance"
     tags = merge(
