@@ -9,7 +9,6 @@ on:
         default: 'build'
         type: choice
         options:
-          - build
           - deploy
 
   push:
@@ -44,7 +43,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build, tag, and push image to Amazon ECR
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'build' || github.event_name == 'push' || github.event_name == 'pull_request'
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'deploy' || github.event_name == 'push' || github.event_name == 'pull_request'
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: thegriffinfamily-link-resume-repo  
@@ -60,6 +59,16 @@ jobs:
         # Updates the image value in the Helm chart's values.yaml file with the new Docker image tag.
         run: |
           sed -i "s|image:.*|image: ${{ env.IMAGE }}|g" helm/webapp/values.yaml
+
+      - name: Configure kubectl
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'deploy' || github.event_name == 'push' || github.event_name == 'pull_request'
+        run: |
+          aws eks update-kubeconfig --name thegriffinfamily-link-resume-prod --region us-east-1
+        
+      - name: Deploy to Kubernetes
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'deploy' || github.event_name == 'push' || github.event_name == 'pull_request'
+        run: |
+            helm upgrade --install webapp ./helm/webapp --namespace default
           
       - name: Commit and push changes
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'deploy' || github.event_name == 'push' || github.event_name == 'pull_request'
@@ -70,3 +79,7 @@ jobs:
           git add helm/webapp/values.yaml 
           git commit -m "Update image tag to ${{ github.sha }}" || echo "No changes to commit"
           git push
+
+          - name: Configure kubectl
+          run: aws eks update-kubeconfig --name thegriffinfamily-link-resume-prod --region us-east-1
+        
