@@ -1,7 +1,20 @@
 name: Infrastructure Deployment
-#Push and pull_request events are triggered for the main and dev branches, and only when changes are made to the infrastructure directory.
+
 on:
-  workflow_dispatch:  # This is a manual trigger
+#Manual triggers
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: 'Operation to perform'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan-dev
+          - apply-dev
+          - plan-prod
+          - apply-prod
+      
   push:
     branches:
       - main
@@ -14,6 +27,7 @@ on:
       - dev
     paths:
       - 'infrastructure/**'
+
 jobs:
   terraform:
     runs-on: ubuntu-latest
@@ -21,6 +35,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -45,23 +60,26 @@ jobs:
         run: terraform validate
         working-directory: ./infrastructure
 
-        #The following steps run the terraform plan and terraform apply commands for the dev and main branches, using the dev.tfvars and prod.tfvars files, respectively.
+      # Manual trigger Only: Plan - Dev
       - name: Terraform Plan (Dev)
-        if: github.ref == 'refs/heads/dev'
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'plan-dev'
         run: terraform plan -var-file="env/dev.tfvars"
         working-directory: ./infrastructure
 
+      # Manual and automatic trigger: Apply - Dev
+      - name: Terraform Apply (Dev)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'apply-dev' || (github.ref == 'refs/heads/dev' && github.event_name == 'push')
+        run: terraform apply -var-file="env/dev.tfvars" -auto-approve
+        working-directory: ./infrastructure
+
+      # Manual trigger: Plan - Prod
       - name: Terraform Plan (Prod)
-        if: github.ref == 'refs/heads/main'
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'plan-prod' 
         run: terraform plan -var-file="env/prod.tfvars"
         working-directory: ./infrastructure
 
-     # - name: Terraform Apply (Dev)
-     #   if: github.ref == 'refs/heads/dev'
-     #   run: terraform apply -var-file="env/dev.tfvars" -auto-approve
-     #   working-directory: ./infrastructure
-
+      # Manual and automatic trigger: Apply - Prod
       - name: Terraform Apply (Prod)
-        if: github.ref == 'refs/heads/main'
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'apply-prod' || (github.ref == 'refs/heads/main' && github.event_name == 'push')
         run: terraform apply -var-file="env/prod.tfvars" -auto-approve
         working-directory: ./infrastructure
