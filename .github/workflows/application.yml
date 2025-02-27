@@ -68,12 +68,22 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'deploy' || github.event_name == 'push' || github.event_name == 'pull_request'
         run: |
           aws eks update-kubeconfig --name thegriffinfamily-link-resume-prod --region us-east-1
-        
+      
+      - name: Get Terraform Outputs
+        id: terraform-output
+        run: |
+          cd infrastructure
+          CERT_ARN=$(terraform output -raw acm_certificate_arn)
+          echo "CERT_ARN=$CERT_ARN" >> $GITHUB_ENV
+            
+  
       - name: Deploy to Kubernetes
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'deploy' || github.event_name == 'push' || github.event_name == 'pull_request'
         run: |
-            helm upgrade --install webapp ./helm/webapp --namespace default
-          
+            helm upgrade --install webapp ./helm/webapp --namespace default \
+              --set ingress.annotations."alb\.ingress\.kubernetes\.io/certificate-arn"=${{ env.CERT_ARN }} \
+              --set ingress.annotations."alb\.ingress\.kubernetes\.io/listen-ports"='[{"HTTP":80},{"HTTPS":443}]' \
+              --set ingress.annotations."alb\.ingress\.kubernetes\.io/ssl-redirect"='443' \
       
       # Commits the changes to the Helm chart's values.yaml file and pushes the changes to the repository.
       - name: Commit and push changes

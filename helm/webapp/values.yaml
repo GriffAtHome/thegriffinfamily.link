@@ -13,7 +13,7 @@ ingress:
   annotations:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+    # Keep basic annotations here that don't change between environments; other annotations will be passed in at runtime through the application.yml workflow
   hosts:
     - host: www.thegriffinfamily.link
       paths:

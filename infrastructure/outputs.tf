@@ -23,3 +23,8 @@ output "kubectl_config_command" {
   value       = "aws eks update-kubeconfig --name ${aws_eks_cluster.main.name} --region ${var.aws_region}"
   description = "Command to configure kubectl"
 }
+
+output "acm_certificate_arn" {
+  description = "The ARN of the ACM certificate"
+  value       = aws_acm_certificate.cert.arn
+}
