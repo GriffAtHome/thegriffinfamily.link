@@ -20,7 +20,10 @@ ingress:
       paths:
         - path: /resumes/mike
           pathType: ImplementationSpecific
-  tls: []
+  ingress:
+  tls:
+    - hosts:
+        - www.thegriffinfamily.link
 
 resources: {}
 nodeSelector: {}
