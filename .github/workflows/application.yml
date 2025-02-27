@@ -84,7 +84,3 @@ jobs:
           git add helm/webapp/values.yaml 
           git commit -m "Update image tag to ${{ github.sha }}" || echo "No changes to commit"
           git push
-
-          - name: Configure kubectl
-          run: aws eks update-kubeconfig --name thegriffinfamily-link-resume-prod --region us-east-1
-        
