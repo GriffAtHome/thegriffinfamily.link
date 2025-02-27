@@ -108,9 +108,17 @@ resource "aws_launch_template" "eks_node" {
   }
 
   user_data = base64encode(<<-EOF
-    #!/bin/bash
-    /etc/eks/bootstrap.sh ${aws_eks_cluster.main.name}
-    EOF
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
+
+--==MYBOUNDARY==
+Content-Type: text/x-shellscript; charset="us-ascii"
+
+#!/bin/bash
+/etc/eks/bootstrap.sh ${aws_eks_cluster.main.name}
+
+--==MYBOUNDARY==--
+EOF
   )
 }
 
