@@ -10,4 +10,4 @@ spec:
     - port: {{ .Values.service.port }}
       targetPort: 8000
   selector:
-    {{- include "webapp.selectorLabels" . | nindent 4 }}
+    app: {{ include "webapp.name" . }}

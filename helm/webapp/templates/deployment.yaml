@@ -8,23 +8,29 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "webapp.selectorLabels" . | nindent 6 }}
+      app: {{ include "webapp.name" . }}
   template:
     metadata:
       labels:
-        {{- include "webapp.selectorLabels" . | nindent 6 }}
+        app: {{ include "webapp.name" . }}
     spec:
       containers:
         - name: {{ .Chart.Name }}
           image: {{ .Values.image }}
-          imagePullPolicy: Always  # Or IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
       nodeSelector:
-        {{- toYaml .Values.nodeSelector | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
       tolerations:
-        {{- toYaml .Values.tolerations | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
       affinity:
-        {{- toYaml .Values.affinity | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
