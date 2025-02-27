@@ -69,30 +69,13 @@ jobs:
         run: |
           aws eks update-kubeconfig --name thegriffinfamily-link-resume-prod --region us-east-1
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.10.5
-
-      - name: Terraform Init
-        run: terraform init
-        working-directory: ./infrastructure
-
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
-      - name: Get Terraform Outputs
-        id: terraform-output
-        run: |
-          cd infrastructure
-          CERT_ARN=$(terraform output -json acm_certificate_arn | jq -r .)
-          echo "CERT_ARN=${CERT_ARN}" >> $GITHUB_ENV
-
+      #Cert ARN hard coded; Ideally it would be passed in as a variable derrived from the terraform output, but there were extra characters
+      #and formatting issues that needed to be resolved.  Hard coded for this excercise in the interest of time
       - name: Deploy to Kubernetes
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'deploy' || github.event_name == 'push' || github.event_name == 'pull_request'
         run: |
           helm upgrade --install webapp ./helm/webapp --namespace default \
-            --set ingress.annotations."alb\.ingress\.kubernetes\.io/certificate-arn"=${{ env.CERT_ARN }} \
+            --set ingress.annotations."alb\.ingress\.kubernetes\.io/certificate-arn"="arn:aws:acm:us-east-1:251374076386:certificate/b167d4f6-8d43-4bb3-8cc6-627e38a03dee" \
             --set ingress.annotations."alb\.ingress\.kubernetes\.io/listen-ports"='[{"HTTP":80},{"HTTPS":443}]' \
             --set ingress.annotations."alb\.ingress\.kubernetes\.io/ssl-redirect"='443'
 
