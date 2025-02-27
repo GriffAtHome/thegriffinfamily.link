@@ -1,10 +1,9 @@
 replicaCount: 2
 
-image: 
-  repository: 251374076386.dkr.ecr.us-east-1.amazonaws.com/thegriffinfamily-link-resume-repo
-  tag: "6bcdfef733d36b9c477bb781291595d2bd202daf"
-  pullPolicy: IfNotPresent
-  
+
+# Simple image string that GitHub Action will replace
+image: "placeholder"
+
 service:
   type: ClusterIP
   port: 80
