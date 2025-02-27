@@ -47,8 +47,9 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'build' || github.event_name == 'push' || github.event_name == 'pull_request'
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: thegriffinfamily-link-resume-repo  # Updated repository name
-          IMAGE_TAG: ${{ github.sha }}
+          ECR_REPOSITORY: thegriffinfamily-link-resume-repo  
+          IMAGE_TAG: ${{ github.sha }} #The Git commit SHA used as the image tag.
+
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./app
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
@@ -56,14 +57,16 @@ jobs:
 
       - name: Update Helm chart values
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'deploy' || github.event_name == 'push' || github.event_name == 'pull_request'
+        # Updates the image value in the Helm chart's values.yaml file with the new Docker image tag.
         run: |
           sed -i "s|image:.*|image: ${{ env.IMAGE }}|g" helm/webapp/values.yaml
           
       - name: Commit and push changes
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'deploy' || github.event_name == 'push' || github.event_name == 'pull_request'
+        # Commits the changes to the Helm chart's values.yaml file and pushes the changes to the repository.
         run: |
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'actions@github.com'
-          git add helm/webapp/values.yaml
+          git add helm/webapp/values.yaml 
           git commit -m "Update image tag to ${{ github.sha }}" || echo "No changes to commit"
           git push

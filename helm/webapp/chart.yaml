@@ -1,0 +1,5 @@
+apiVersion: v2
+name: webapp
+description: A Helm chart for deploying the Griffin Family.Link Interactive Resume web application
+version: 0.1.0
+appVersion: "1.0"
