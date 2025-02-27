@@ -33,7 +33,7 @@ resource "aws_subnet" "public_2" {
   }
 }
 
-# Private subnets
+### Private subnets
 resource "aws_subnet" "private_1" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.10.0/24"
@@ -56,7 +56,7 @@ resource "aws_subnet" "private_2" {
   }
 }
 
-# Internet Gateway for public subnets
+### Internet Gateway for public subnets
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
   
@@ -65,7 +65,7 @@ resource "aws_internet_gateway" "igw" {
   }
 }
 
-# Elastic IPs for NAT Gateways
+### Elastic IPs for NAT Gateways
 resource "aws_eip" "nat_1" {
   domain = "vpc"
   
@@ -82,7 +82,7 @@ resource "aws_eip" "nat_2" {
   }
 }
 
-# NAT Gateways
+### NAT Gateways
 resource "aws_nat_gateway" "nat_1" {
   allocation_id = aws_eip.nat_1.id
   subnet_id     = aws_subnet.public_1.id
@@ -101,5 +101,59 @@ resource "aws_nat_gateway" "nat_2" {
   }
 }
 
-# Route tables and associations
-# ...
+####Route tables and associations
+# Public route table
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+  
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+  
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.project_name}-public-rt"
+    }
+  )
+}
+
+# Associate public route table with both public subnets
+resource "aws_route_table_association" "public_1" {
+  subnet_id      = aws_subnet.public_1.id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table_association" "public_2" {
+  subnet_id      = aws_subnet.public_2.id
+  route_table_id = aws_route_table.public.id
+}
+
+# Private route table
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.main.id
+  
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.main.id
+  }
+  
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.project_name}-private-rt"
+    }
+  )
+}
+
+# Associate private subnets with private route table
+resource "aws_route_table_association" "private_1" {
+  subnet_id      = aws_subnet.private_1.id
+  route_table_id = aws_route_table.private.id
+}
+
+resource "aws_route_table_association" "private_2" {
+  subnet_id      = aws_subnet.private_2.id
+  route_table_id = aws_route_table.private.id
+}

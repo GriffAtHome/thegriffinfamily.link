@@ -242,4 +242,3 @@ resource "aws_security_group_rule" "eks_nodes_ingress_cluster" {
   type                     = "ingress"
 }
 
-# Add the following variables to your variables.tf file
