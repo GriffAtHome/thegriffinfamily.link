@@ -82,7 +82,7 @@ jobs:
         id: terraform-output
         run: |
           cd infrastructure
-          CERT_ARN=$(terraform output -raw acm_certificate_arn | tr -d '\n' | xargs)
+          CERT_ARN=$(terraform output acm_certificate_arn | tr -d '\n' | xargs)
           echo "CERT_ARN=${CERT_ARN}" >> $GITHUB_ENV
             
       - name: Deploy to Kubernetes
