@@ -83,45 +83,6 @@ resource "aws_eks_cluster" "main" {
   tags = local.common_tags
 }
 
-# Launch Template for EKS Node Group
-resource "aws_launch_template" "eks_node" {
-  name = "${local.project_name}-node-template"
-
-  block_device_mappings {
-    device_name = "/dev/xvda"
-
-    ebs {
-      volume_size = var.node_disk_size
-      volume_type = "gp3"
-    }
-  }
-
-  tag_specifications {
-    resource_type = "instance"
-    tags = merge(
-      local.common_tags,
-      {
-        Name = "${local.project_name}-${local.environment}-node"
-        "kubernetes.io/cluster/${local.project_name}-${local.environment}" = "owned"
-      }
-    )
-  }
-
-  user_data = base64encode(<<-EOF
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
-
---==MYBOUNDARY==
-Content-Type: text/x-shellscript; charset="us-ascii"
-
-#!/bin/bash
-/etc/eks/bootstrap.sh ${aws_eks_cluster.main.name}
-
---==MYBOUNDARY==--
-EOF
-  )
-}
-
 # EKS Node Group
 resource "aws_eks_node_group" "main" {
   cluster_name    = aws_eks_cluster.main.name
@@ -129,13 +90,12 @@ resource "aws_eks_node_group" "main" {
   node_role_arn   = aws_iam_role.eks_node_group.arn
   subnet_ids      = [aws_subnet.private_1.id, aws_subnet.private_2.id]
   
+  # Direct configuration - Could use launch template here, but went for direct configuration for simplicity
   instance_types = var.node_instance_types
+  disk_size      = var.node_disk_size
   
-  launch_template {
-    name    = aws_launch_template.eks_node.name
-    version = aws_launch_template.eks_node.latest_version
-  }
-
+  # Remove the launch_template block completely
+  
   scaling_config {
     desired_size = var.node_desired_size
     max_size     = var.node_max_size
@@ -163,9 +123,10 @@ resource "aws_eks_node_group" "main" {
     local.common_tags,
     {
       "kubernetes.io/cluster/${local.project_name}-${local.environment}" = "owned"
+      "k8s.io/cluster-autoscaler/enabled" = "true"
+      "k8s.io/cluster-autoscaler/${local.project_name}-${local.environment}" = "owned"
     }
   )
-
 }
 
 # Security group for EKS Cluster
@@ -242,3 +203,13 @@ resource "aws_security_group_rule" "eks_nodes_ingress_cluster" {
   type                     = "ingress"
 }
 
+# Allow control plane to access node ports 10250
+resource "aws_security_group_rule" "eks_nodes_ingress_control_plane" {
+  description              = "Allow control plane to access kubelet API"
+  from_port                = 10250
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.eks_nodes.id
+  source_security_group_id = aws_security_group.eks_cluster.id
+  to_port                  = 10250
+  type                     = "ingress"
+}
