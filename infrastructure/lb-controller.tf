@@ -64,7 +64,6 @@ resource "helm_release" "aws_load_balancer_controller" {
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.aws_load_balancer_controller,
-    kubernetes_namespace.kube_system  # Only needed if the namespace doesn't exist
+    aws_iam_role_policy_attachment.aws_load_balancer_controller
   ]
 }
