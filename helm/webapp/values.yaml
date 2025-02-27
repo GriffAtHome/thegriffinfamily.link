@@ -14,9 +14,9 @@ ingress:
   className: ""
   annotations: {}
   hosts:
-    - host: chart-example.local
+    - host: www.thegriffinfamily.link
       paths:
-        - path: /
+        - path: /resumes/mike
           pathType: ImplementationSpecific
   tls: []
 
