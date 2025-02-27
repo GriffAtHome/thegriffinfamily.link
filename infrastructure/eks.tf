@@ -83,7 +83,7 @@ resource "aws_eks_cluster" "main" {
   tags = local.common_tags
 }
 
-# Add Launch Template for EKS Node Group
+# Launch Template for EKS Node Group
 resource "aws_launch_template" "eks_node" {
   name = "${local.project_name}-node-template"
 
@@ -124,7 +124,6 @@ resource "aws_eks_node_group" "main" {
   subnet_ids      = [aws_subnet.private_1.id, aws_subnet.private_2.id]
   
   instance_types = var.node_instance_types
-  disk_size      = var.node_disk_size
   
   launch_template {
     name    = aws_launch_template.eks_node.name
