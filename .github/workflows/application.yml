@@ -81,8 +81,9 @@ jobs:
       - name: Get Terraform Outputs
         id: terraform-output
         run: |
-          CERT_ARN=$(terraform output -raw acm_certificate_arn)
-          echo "CERT_ARN=$CERT_ARN" >> $GITHUB_ENV
+          cd infrastructure
+          CERT_ARN=$(terraform output -raw acm_certificate_arn | xargs)
+          echo "CERT_ARN=${CERT_ARN}" >> $GITHUB_ENV
             
       - name: Deploy to Kubernetes
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'deploy' || github.event_name == 'push' || github.event_name == 'pull_request'
