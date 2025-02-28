@@ -17,6 +17,16 @@ resource "helm_release" "argo_rollouts" {
     value = "ClusterIP"
   }
 
+  set {
+    name  = "dashboard.serviceAccount.create"
+    value = "true"
+  }
+
+  set {
+    name  = "dashboard.readonly"
+    value = "false"
+  }
+
   depends_on = [
     aws_eks_node_group.main
   ]

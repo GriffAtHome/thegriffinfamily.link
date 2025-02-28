@@ -8,10 +8,12 @@ Tasks:
 Infrastructure Provisioning:
 Use Terraform (or AWS CloudFormation) to provision an EKS cluster along with the necessary networking, IAM roles, and other AWS resources.
 Use Helm to install any additional kubernetes software that you will need in this cluster
-Completion Notes: Terraform was used to provision the EKS cluster along with networking (see below for rough diagram), IAM roles (taking least privelage best practices into account) and security groups.  
+
+::Completion Notes:: 
+Terraform was used to provision the EKS cluster along with networking (see below for rough diagram), IAM roles (taking least privelage best practices into account) and security groups.  
 The Domain name already existed, so it was  not created with Terraform/IaC.  GitHub actions Connection to AWS is configured to use the GitHub OIDC provider and an assumed role rather than static secrets, for added security.  The assumed role is configured with full admin privilages; this was in the interest of time, for dev/test purposes only.  Production use would require scaling permissions appropriately.  
 
-Helm is used to manage prometheus, autoscaling and package deployment to AKS
+Helm is used to manage prometheus, autoscaling and package deployment to AKS.  Helm is also used in conjuction with Terraform to build and configure ArgoCD and Argo rollouts.  
 
 GitOps Setup:
 Configure a GitOps tool (such as ArgoCD or Flux) to monitor a Git repository for changes in deployment manifests. Demonstrate how updating a manifest triggers an automatic deployment to the cluster.
@@ -22,8 +24,10 @@ Package a sample microservice (or use a provided sample) in a container image an
 Documentation & Testing:
 Document your pipeline, explain your design choices, and include a test scenario that simulates a deployment failure triggering an automatic rollback.
 
-Extra Credit:
-Integrate a tool (such as Argo Rollouts) to implement a blue/green deployment of the microservice.
+::Completion Notes::
+ArgoCD and Argo rollouts were chosen to implement a full GitOps workflow.  When changes are pushed to the /app/* directory of the repository, GitHub Actions workflows will run the docker build and push the image to the AWS container registry, and update the Helm chart with the newest image name.  Argo CD will monitor the repository for changes and sync the change.  
+
+Argo Rollout will slowly rollout the new version and shift traffic to the new deployment.  If a failure is detected (i.e. a healthcheck endpoint is detected), Argo rollouts should roll back the deployment.  
 
 
 
