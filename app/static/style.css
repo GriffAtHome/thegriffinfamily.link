@@ -1,31 +1,38 @@
 /* General Styles */
-body {
-    font-family: Arial, sans-serif;
-    line-height: 1.6;
+* {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
     color: #333;
-    background-color: #f9f9f9;
+    background-color: #f5f5f5;
+    padding: 20px;
 }
 
 .container {
-    max-width: 900px;
+    max-width: 800px;
     margin: 0 auto;
-    padding: 20px;
-    background: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    padding: 30px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
 }
 
 header {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #0066cc;
+    padding-bottom: 20px;
 }
 
 header h1 {
-    font-size: 2em;
-    color: #0073e6;
-    margin: 0;
+    color: #0066cc;
+    font-size: 28px;
+    margin-bottom: 5px;
 }
 
 header p {
@@ -36,6 +43,15 @@ header p {
 header a {
     color: #0073e6;
     text-decoration: none;
+}
+
+a {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
 }
 
 section {
@@ -56,21 +72,78 @@ h2:hover, h3:hover {
     background-color: #e0e0e0;
 }
 
+.toggle {
+    cursor: pointer;
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-left: 4px solid #0066cc;
+    display: flex;
+    align-items: center;
+}
+
+.toggle:hover {
+    background-color: #f0f0f0;
+}
+
+.toggle::after {
+    content: '+';
+    margin-left: auto;
+    font-weight: bold;
+    font-size: 18px;
+    transition: transform 0.3s;
+}
+
+.toggle.active::after {
+    content: '-';
+}
+
 .content {
     display: none;
-    padding-left: 15px;
+    padding: 15px;
+    border-left: 1px solid #eee;
+    margin-left: 10px;
+}
+
+.content.show {
+    display: block;
+}
+
+article {
+    margin-bottom: 25px;
+}
+
+article h3 {
+    font-size: 18px;
+    color: #444;
+    margin-bottom: 5px;
+}
+
+article h4 {
+    font-size: 16px;
+    color: #0066cc;
+    margin-bottom: 5px;
 }
 
 ul {
-    margin: 0;
-    padding: 0 0 0 20px;
+    padding-left: 20px;
+    margin-top: 10px;
 }
 
 ul li {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 em {
     font-style: italic;
     color: #555;
+}
+
+@media print {
+    .toggle::after {
+        display: none;
+    }
+    
+    .content {
+        display: block !important;
+    }
 }
