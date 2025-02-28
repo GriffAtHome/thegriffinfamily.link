@@ -29,7 +29,7 @@ resource "helm_release" "argocd" {
   # Configure RBAC
   set {
     name  = "server.rbacConfig.policy\\.csv"
-    value = "g, admin, role:admin"
+    value = "g,admin,role:admin"
   }
 
   # Enable metrics for Prometheus
