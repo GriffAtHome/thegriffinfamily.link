@@ -21,6 +21,3 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-  health:
-    healthCheckRetries: 5
-    healthCheckTimeout: 60s
