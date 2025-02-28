@@ -52,7 +52,9 @@ output "argocd_server_url" {
   value       = "Use port-forwarding to access: kubectl port-forward svc/argocd-server -n argocd 8080:443"
 }
 
+#Show admin password - Not good practice, but used for dev/test purposes   
 output "argocd_admin_password" {
   description = "Initial admin password for ArgoCD"
   value       = var.argocd_admin_password
+  sensitive = true
 }
