@@ -22,6 +22,36 @@ resource "helm_release" "argo_rollouts" {
   ]
 }
 
+resource "kubectl_manifest" "argo_rollouts_rbac" {
+  yaml_body = <<YAML
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: argo-rollouts-extended
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: argo-rollouts-extended
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: argo-rollouts-extended
+subjects:
+  - kind: ServiceAccount
+    name: argo-rollouts
+    namespace: argo-rollouts
+YAML
+
+  depends_on = [
+    helm_release.argo_rollouts
+  ]
+}
+
 # Define output for Argo Rollouts dashboard
 output "argo_rollouts_dashboard" {
   description = "Access to Argo Rollouts dashboard"
