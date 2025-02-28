@@ -17,6 +17,11 @@ on:
 jobs:
   build-and-update:
     runs-on: ubuntu-latest
+    # permissions required for OIDC authentication
+    permissions:
+      id-token: write
+      contents: write  # Changed from 'read' to 'write' to allow git push
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
