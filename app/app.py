@@ -4,6 +4,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def health_check():
+    """Root endpoint returns health check"""
     return "Healthy", 200
 
 @app.route('/health/liveness')
@@ -18,9 +19,9 @@ def readiness():
 
 @app.route('/resumes/mike')
 def resume_mike():
+    """Route that serves your custom resume"""
     return render_template('index.html')
 
 if __name__ == '__main__':
-    # For local development only
     app.run(debug=True, host='0.0.0.0', port=8000)
 
