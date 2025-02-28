@@ -7,5 +7,5 @@ spec:
   serviceRef:
     name: webapp
     port: 80
-  targetGroupARN: arn:aws:elasticloadbalancing:us-east-1:251374076386:targetgroup/thegriffinfamily-link-resume-tg/d83a7c6d256455c7
+  targetGroupARN: arn:aws:elasticloadbalancing:us-east-1:251374076386:targetgroup/k8s-default-webappne-68b86f9f40/9200a44fcc673214 #Need to update to get ARN programatically as a variable
   targetType: ip
