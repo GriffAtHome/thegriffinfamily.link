@@ -7,13 +7,9 @@ services:
       - "8000:8000"
     environment:
       - FLASK_APP=app.py
+      - FLASK_ENV=development
+      - GUNICORN_WORKERS=1
+    volumes:
+      - .:/app  # Mount local directory for development
     command: gunicorn -w 4 -b 0.0.0.0:8000 app:app
 
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-    depends_on:
-      - web

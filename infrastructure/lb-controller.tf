@@ -3,10 +3,8 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
   name        = "AWSLoadBalancerControllerIAMPolicy"
   description = "IAM policy for AWS Load Balancer Controller"
   
-  # Either update lb-controller-policy.json or use this inline policy
+  # Points to the updated policy file
   policy = file("${path.module}/lb-controller-policy.json")
-  
-  # Add any missing permissions identified during troubleshooting
 }
 
 # IAM Role for Service Account (IRSA) for Load Balancer Controller

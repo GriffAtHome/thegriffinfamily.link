@@ -13,15 +13,49 @@ spec:
     metadata:
       labels:
         app: {{ include "webapp.name" . }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
     spec:
       containers:
         - name: {{ .Chart.Name }}
           image: {{ .Values.image }}
           imagePullPolicy: Always
           ports:
-            - containerPort: 8000
+            - name: http
+              containerPort: 8000
+          # Add startup command for clarity
+          command: 
+            - "gunicorn"
+            - "--workers"
+            - "$(GUNICORN_WORKERS)"
+            - "--bind"
+            - "0.0.0.0:8000"
+            - "app:app"
+          env:
+            - name: GUNICORN_WORKERS
+              value: "{{ .Values.gunicornWorkers | default "2" }}"
+          # Add probes for better pod lifecycle management
+          livenessProbe:
+            httpGet:
+              path: /health/liveness
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/readiness
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
