@@ -3,29 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <title>My Resume</title>
+    <title>Michael Griffin - Interactive Resume</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
-        <h1>Your Name</h1>
-        <p>Brief introduction or tagline.</p>
-    </header>
-    <section>
-        <h2>Experience</h2>
-        <ul>
-            <li>Job Title at Company (Year - Year)</li>
-            <li>Another Job Title at Another Company (Year - Year)</li>
-        </ul>
-    </section>
-    <section>
-        <h2>Education</h2>
-        <ul>
-            <li>Degree at University (Year)</li>
-        </ul>
-    </section>
-    <footer>
-        <p>Contact Information</p>
-    </footer>
+    <div class="container">
+        <header>
+            <h1>Michael Griffin</h1>
+            <p>(631) 678-2330 • 2 Cardinal Ct. Marlboro, NJ 07746 • <a href="mailto:MikeGriff81@gmail.com">MikeGriff81@gmail.com</a></p>
+        </header>
+
+        <!-- Summary Section -->
+        <section>
+            <h2 class="toggle" onclick="toggleSection(this)">Summary</h2>
+            <div class="content">
+                <p>
+                    Experienced IT Professional with over 20 years diverse experience in both government and private sector. 
+                    Visionary, teacher and influencer capable of viewing the big picture and translating into technical requirements. 
+                    Adept at learning and implementing new technology on a path to break free from the status quo.
+                </p>
+            </div>
+        </section>
+
+        <!-- Professional Experience Section -->
+        <section>
+            <h2 class="toggle" onclick="toggleSection(this)">Professional Experience</h2>
+            <div class="content">
+                <!-- Job 1 -->
+                <article>
+                    <h3 class="toggle" onclick="toggleSection(this)">USDA - Animal Plant Health Inspection Service (APHIS), Remote, Marlboro, NJ</h3>
+                    <div class="content">
+                        <h4>Deputy Associate Chief Information Security Officer</h4>
+                        <p><em>December 2024 – Present</em></p>
+                        <ul>
+                            <li>Optimized Service Delivery: Streamline process to review and approve security impacts of operational changes, reducing paperwork burden while ensuring robust security requirements.</li>
+                            <li>Team Building: Built Cybersecurity Operations team to handle incident response, security policy, and audits.</li>
+                            <li>Security Enhancements: Created and implemented technical policies and standards to enhance security posture and operational efficiencies.</li>
+                            <li>Privacy and Data Governance: Provided guidance, education, and oversight for privacy, data governance, and incident management.</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Job 2 -->
+                <article>
+                    <h3 class="toggle" onclick="toggleSection(this)">Deputy Director, Infrastructure Services</h3>
+                    <div class="content">
+                        <p><em>August 2024 – December 2024</em></p>
+                        <ul>
+                            <li>Accelerated Innovation: Established an Infrastructure as Code Community of Practice, fostering collaboration between teams.</li>
+                            <li>Optimized Service Delivery: Implemented a ServiceNow-based service catalog, improving ITIL practices and service delivery.</li>
+                            <li>Reduced Costs: Standardized WAN services across 243 global locations, saving over $650K annually.</li>
+                            <li>Improved Financial Transparency: Developed new budget allocation and chargeback processes to increase accuracy in billing.</li>
+                            <li>Stakeholder Management: Developed technical roadmaps and priorities based on business objectives across multiple business lines.</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Job 3 -->
+                <article>
+                    <h3 class="toggle" onclick="toggleSection(this)">Branch Chief, Enterprise Hosting Branch</h3>
+                    <div class="content">
+                        <p><em>June 2023 – August 2024</em></p>
+                        <ul>
+                            <li>Revitalized Operations: Transformed a dysfunctional team with a 1500-ticket backlog by implementing robust processes and developing a skilled workforce.</li>
+                            <li>Accelerated Onboarding: Streamlined onboarding processes, reducing time to productivity from months to weeks.</li>
+                            <li>Optimized Costs and Enhanced Security: Adopted FinOps principles, reducing annual spending by 25%.</li>
+                            <li>Solution Architecture: Oversaw the creation of a new landing zone in Azure for scientific computing and data analytics.</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Job 4 -->
+                <article>
+                    <h3 class="toggle" onclick="toggleSection(this)">Lead Cloud Architect, Integration Services Branch</h3>
+                    <div class="content">
+                        <p><em>August 2021 – June 2023</em></p>
+                        <ul>
+                            <li>Architected Secure Cloud Infrastructure: Designed and deployed a robust AWS multi-account landing zone for VDI services.</li>
+                            <li>Optimized Cloud Costs: Developed cost models and forecasts to provide financial transparency.</li>
+                            <li>Cultivated a DevSecOps Culture: Evangelized DevSecOps principles and conducted training sessions.</li>
+                            <li>Enhanced Security Posture: Implemented robust security controls based on NIST 800-57 frameworks.</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Job 5 -->
+                <article>
+                    <h3 class="toggle" onclick="toggleSection(this)">IT Supervisor, Infrastructure Operations</h3>
+                    <div class="content">
+                        <p><em>November 2012 – August 2021</em></p>
+                        <ul>
+                            <li>Automated Database Management: Developed tools to streamline database discovery and configuration management.</li>
+                            <li>Enhanced Exchange Server Efficiency: Optimized Exchange 2010 utilization for 50,000 users.</li>
+                            <li>Professional Development: Actively participated in leadership development programs.</li>
+                        </ul>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- Education Section -->
+        <section>
+            <h2 class="toggle" onclick="toggleSection(this)">Education</h2>
+            <div class="content">
+                <ul>
+                    <li><strong>Stony Brook University</strong> – Bachelor of Arts in Multidisciplinary Studies (05/2007)</li>
+                    <li><strong>SUNY Utica Technical College</strong> – Major: Telecommunications</li>
+                    <li><strong>Ulster County Community College</strong> – Major: Computer Science</li>
+                </ul>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        function toggleSection(element) {
+            const content = element.nextElementSibling;
+            if (content.style.display === "none" || content.style.display === "") {
+                content.style.display = "block";
+            } else {
+                content.style.display = "none";
+            }
+        }
+    </script>
 </body>
 </html>
