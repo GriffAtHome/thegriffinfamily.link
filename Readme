@@ -1,3 +1,35 @@
+GitOps-Based Deployment Pipeline on AWS EKS
+
+Objective:
+Construct a fully automated, GitOps-driven CI/CD pipeline to deploy a sample microservice application to an AWS EKS cluster. You are welcome to utilize any open-source tools, modules, or scripts that you find helpful. Please complete all of the tasks listed below.  The extra credit task is optional.
+
+Tasks:
+
+Infrastructure Provisioning:
+Use Terraform (or AWS CloudFormation) to provision an EKS cluster along with the necessary networking, IAM roles, and other AWS resources.
+Use Helm to install any additional kubernetes software that you will need in this cluster
+Completion Notes: Terraform was used to provision the EKS cluster along with networking (see below for rough diagram), IAM roles (taking least privelage best practices into account) and security groups.  
+The Domain name already existed, so it was  not created with Terraform/IaC.  GitHub actions Connection to AWS is configured to use the GitHub OIDC provider and an assumed role rather than static secrets, for added security.  The assumed role is configured with full admin privilages; this was in the interest of time, for dev/test purposes only.  Production use would require scaling permissions appropriately.  
+
+Helm is used to manage prometheus, autoscaling and package deployment to AKS
+
+GitOps Setup:
+Configure a GitOps tool (such as ArgoCD or Flux) to monitor a Git repository for changes in deployment manifests. Demonstrate how updating a manifest triggers an automatic deployment to the cluster.
+
+Application Deployment:
+Package a sample microservice (or use a provided sample) in a container image and deploy it on EKS.  Develop a helm chart to deploy the application.  Implement automated rollbacks in case of failures.  
+
+Documentation & Testing:
+Document your pipeline, explain your design choices, and include a test scenario that simulates a deployment failure triggering an automatic rollback.
+
+Extra Credit:
+Integrate a tool (such as Argo Rollouts) to implement a blue/green deployment of the microservice.
+
+
+
+
+
+
                                   +------------------+
                                   |                  |
                  +------------->  | Route 53         |
@@ -78,18 +110,5 @@ Internet +-----> |                |                  |
                                   +---------------------------------+
 
 
-Communication Flow
-User Request Flow:
---> User requests www.griffinfamily.link/Resumes/Mike
---> DNS resolves to the ALB IP address
---> ALB forwards the request to the Kubernetes ingress controller
---> Ingress routes the request to web application service
---> Web app pods serve the content
 
-Deployment Flow:
---> Push code to GitHub
---> GitHub Actions builds a new container image
---> Image is pushed to ECR
---> Helm chart values are updated with the new image tag
---> ArgoCD detects the change and updates the deployment
---> Kubernetes rolls out the new version
+

@@ -22,34 +22,35 @@ resource "helm_release" "argo_rollouts" {
   ]
 }
 
-resource "kubectl_manifest" "argo_rollouts_rbac" {
-  yaml_body = <<YAML
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: argo-rollouts-extended
-rules:
-  - apiGroups: [""]
-    resources: ["configmaps"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: argo-rollouts-extended
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: argo-rollouts-extended
-subjects:
-  - kind: ServiceAccount
-    name: argo-rollouts
-    namespace: argo-rollouts
-YAML
+# Instead of kubectl_manifest for RBAC:
+resource "kubernetes_cluster_role" "argo_rollouts_extended" {
+  metadata {
+    name = "argo-rollouts-extended"
+  }
 
-  depends_on = [
-    helm_release.argo_rollouts
-  ]
+  rule {
+    api_groups = [""]
+    resources  = ["configmaps"]
+    verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "argo_rollouts_extended" {
+  metadata {
+    name = "argo-rollouts-extended"
+  }
+  
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = kubernetes_cluster_role.argo_rollouts_extended.metadata[0].name
+  }
+  
+  subject {
+    kind      = "ServiceAccount"
+    name      = "argo-rollouts"
+    namespace = "argo-rollouts"
+  }
 }
 
 # Define output for Argo Rollouts dashboard
