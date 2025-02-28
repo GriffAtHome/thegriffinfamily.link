@@ -1,7 +1,7 @@
 replicaCount: 2
 
 # Simple image string that GitHub Action will replace
-image: 251374076386.dkr.ecr.us-east-1.amazonaws.com/thegriffinfamily-link-resume-repo:8a58375b8314af450cf5649aabbb833c1ebb3543
+image: 251374076386.dkr.ecr.us-east-1.amazonaws.com/thegriffinfamily-link-resume-repo:f978281632d9bcccb10b3109aa390b4548e58d94
 
 # Add this parameter for gunicorn workers
 gunicornWorkers: "2"
