@@ -1,0 +1,11 @@
+apiVersion: elbv2.k8s.aws/v1beta1
+kind: TargetGroupBinding
+metadata:
+  name: webapp-tgb
+  namespace: default
+spec:
+  serviceRef:
+    name: webapp
+    port: 80
+  targetGroupARN: arn:aws:elasticloadbalancing:us-east-1:251374076386:targetgroup/thegriffinfamily-link-resume-tg/d83a7c6d256455c7
+  targetType: ip
