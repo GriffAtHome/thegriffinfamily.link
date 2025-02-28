@@ -13,11 +13,10 @@ resource "helm_release" "argocd" {
   }
 
   # Configure initial admin password 
-  # Use Helm's plain text password option - ArgoCD will hash it internally
   set {
     name  = "configs.secret.argocdServerAdminInitialPassword"
     value = var.argocd_admin_password
-    type = "string"
+    type  = "string"
   }
 
   # Enable management of secrets by Helm
@@ -26,17 +25,21 @@ resource "helm_release" "argocd" {
     value = "true"
   }
 
-  # Configure RBAC
-  set {
-    name  = "server.rbacConfig.policy\\.csv"
-    value = "g,admin,role:admin"
-  }
-
   # Enable metrics for Prometheus
   set {
     name  = "server.metrics.enabled"
     value = "true"
   }
+
+  # Use values block for complex configurations
+  values = [
+    <<EOF
+server:
+  rbacConfig:
+    policy.csv: |
+      g, admin, role:admin
+EOF
+  ]
 
   depends_on = [
     aws_eks_node_group.main
