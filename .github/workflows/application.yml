@@ -1,38 +1,28 @@
-name: Build and Deploy Application
+name: Build and Update Image
 
 on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'app/**'
+      - '.github/workflows/application.yml'
+      - 'helm/webapp/**'
   workflow_dispatch:
     inputs:
       operation:
         description: 'Operation to perform'
         required: true
-        default: 'build'
-        type: choice
-        options:
-          - deploy
-
-  push:
-    branches: [main]
-    paths:
-      - 'app/**'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'app/**'
+        default: 'deploy'
 
 jobs:
-  build:
+  build-and-update:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: write
-
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-
+        uses: actions/checkout@v3
+        
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: "arn:aws:iam::251374076386:role/GriffinFamily.Link.TF"
           aws-region: us-east-1
@@ -44,57 +34,37 @@ jobs:
 
       - name: Fix Chart.yaml case sensitivity
         run: |
-          mv helm/webapp/chart.yaml helm/webapp/Chart.yaml || echo "File already has correct name"
+          if [ -f helm/webapp/chart.yaml ] && [ ! -f helm/webapp/Chart.yaml ]; then
+            mv helm/webapp/chart.yaml helm/webapp/Chart.yaml
+          fi
 
-      - name: Build, tag, and push image to Amazon ECR
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'deploy' || github.event_name == 'push' || github.event_name == 'pull_request'
+      - name: Build and push Docker image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: thegriffinfamily-link-resume-repo
-          IMAGE_TAG: ${{ github.sha }} #The Git commit SHA used as the image tag.
-
+          IMAGE_TAG: ${{ github.sha }}
+          IMAGE: ${{ steps.login-ecr.outputs.registry }}/thegriffinfamily-link-resume-repo:${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./app
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
-
-      - name: Update Helm chart values
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'deploy' || github.event_name == 'push' || github.event_name == 'pull_request'
-        # Updates the image value in the Helm chart's values.yaml file with the new Docker image tag.
-        run: |
-          sed -i "s|image:.*|image: ${{ env.IMAGE }}|g" helm/webapp/values.yaml
-
-      - name: Configure kubectl
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'deploy' || github.event_name == 'push' || github.event_name == 'pull_request'
-        run: |
-          aws eks update-kubeconfig --name thegriffinfamily-link-resume-prod --region us-east-1
-
-      #Cert ARN hard coded; Ideally it would be passed in as a variable derrived from the terraform output, but there were extra characters
-      #and formatting issues that needed to be resolved.  Hard coded for this excercise in the interest of time
-      - name: Deploy to Kubernetes
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'deploy' || github.event_name == 'push' || github.event_name == 'pull_request'
-        run: |
-          # Create a values override file with the correct format for listen-ports
-          cat > override-values.yaml <<EOF
-          ingress:
-            annotations:
-              alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:251374076386:certificate/b167d4f6-8d43-4bb3-8cc6-627e38a03dee"
-              alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
-              alb.ingress.kubernetes.io/ssl-redirect: "443"
-              alb.ingress.kubernetes.io/target-type: "ip"
-              alb.ingress.kubernetes.io/subnets: "${AWS_PUBLIC_SUBNETS}"
-              alb.ingress.kubernetes.io/tags: "Environment=prod,Project=thegriffinfamily-link-resume"
-          EOF
+          # Build Docker image with the tag
+          cd app
+          docker build -t $IMAGE .
           
-          # Use the values file instead of --set flags
-          helm upgrade --install webapp ./helm/webapp --namespace default -f override-values.yaml
+          # Push the image to ECR
+          docker push $IMAGE
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
-      # Commits the changes to the Helm chart's values.yaml file and pushes the changes to the repository.
-      - name: Commit and push changes
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'deploy' || github.event_name == 'push' || github.event_name == 'pull_request'
+      - name: Update Helm values
         run: |
-          git config --global user.name 'GitHub Actions'
-          git config --global user.email 'actions@github.com'
+          # Configure git
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+          # Update the image value in values.yaml
+          sed -i "s|image:.*|image: ${{ env.IMAGE }}|g" helm/webapp/values.yaml
+          
+          # Commit and push the changes
           git add helm/webapp/values.yaml
-          git commit -m "Update image tag to ${{ github.sha }}" || echo "No changes to commit"
+          git commit -m "Update image to ${{ github.sha }}" || echo "No changes to commit"
           git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

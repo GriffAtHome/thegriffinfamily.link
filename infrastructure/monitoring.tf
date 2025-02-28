@@ -16,3 +16,27 @@ resource "aws_cloudwatch_metric_alarm" "flask_health" {
     LoadBalancer = "app/k8s-default-webappne-338b082b37/ecdeb8cb86aa34c7"  # ALB name from the console
   }
 }
+
+# Install Prometheus for monitoring
+resource "helm_release" "prometheus" {
+  name             = "prometheus"
+  repository       = "https://prometheus-community.github.io/helm-charts"
+  chart            = "kube-prometheus-stack"
+  version          = "51.2.0"
+  namespace        = "prometheus"
+  create_namespace = true
+
+  set {
+    name  = "grafana.enabled"
+    value = "true"
+  }
+
+  set {
+    name  = "prometheus.serviceMonitor.selfMonitor"
+    value = "true"
+  }
+
+  depends_on = [
+    aws_eks_node_group.main
+  ]
+}

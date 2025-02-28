@@ -5,10 +5,25 @@ metadata:
   name: {{ include "webapp.fullname" . }}
   labels:
     {{- include "webapp.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- if .Values.ingress.annotations }}
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+    {{- end }}
+    # Add this annotation for Argo Rollouts traffic splitting support
+    alb.ingress.kubernetes.io/actions.weighted-routing: >
+      {
+        "type":"weighted-forward",
+        "forwardConfig":{
+          "targetGroups":[
+            {
+              "weight":80
+            },
+            {
+              "weight":20
+            }
+          ]
+        }
+      }
 spec:
   {{- if .Values.ingress.className }}
   ingressClassName: {{ .Values.ingress.className }}

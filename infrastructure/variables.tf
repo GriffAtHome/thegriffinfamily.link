@@ -87,3 +87,10 @@ variable "node_min_size" {
   default     = 1
 }
 
+# Use a variable for the password
+variable "argocd_admin_password" {
+  description = "Admin password for ArgoCD"
+  type        = string
+  sensitive   = true
+  # No default - will be passed from environment
+}
