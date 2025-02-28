@@ -2,7 +2,7 @@ replicaCount: 2
 
 
 # Simple image string that GitHub Action will replace
-image: 251374076386.dkr.ecr.us-east-1.amazonaws.com/thegriffinfamily-link-resume-repo:dd0b97fc4b92a8f81bcec645ca91cb3fe8984728
+image: 251374076386.dkr.ecr.us-east-1.amazonaws.com/thegriffinfamily-link-resume-repo:95d6d87b80bcc9dd6af993c44a7b792d0736220f
 
 service:
   type: ClusterIP
