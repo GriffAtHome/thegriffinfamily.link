@@ -232,9 +232,29 @@ resource "aws_security_group_rule" "allow_alb_to_flask" {
   description              = "Allow traffic from ALB to Flask app"
 }
 
+
+# Create a rule using the found security group
+resource "aws_security_group_rule" "allow_alb_to_flask" {
+  type                     = "ingress"
+  from_port                = 8000
+  to_port                  = 8000
+  protocol                 = "tcp"
+  security_group_id        = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
+  
+  # This should reference the first security group associated with the ALB
+  source_security_group_id = tolist(data.aws_lb.ingress_alb.security_groups)[0]
+  
+  description              = "Allow traffic from ALB to Flask app"
+}
+
 #data sources
 data "aws_caller_identity" "current" {}
 
 data "aws_eks_cluster" "cluster" {
   name = "${local.project_name}-${local.environment}" # cluster name
+}
+
+# Find the ALB security group
+data "aws_lb" "ingress_alb" {
+  name = "k8s-default-webappne-338b082b37"  # The name of your ALB from the AWS console
 }
