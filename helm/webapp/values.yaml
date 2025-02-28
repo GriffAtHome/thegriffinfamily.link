@@ -10,11 +10,12 @@ service:
 
 ingress:
   enabled: true
+  ingressClassName: alb  # Use this instead of kubernetes.io/ingress.class annotation
   annotations:
-    kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/target-type: ip  # Add this line to use controller's target group
-    # Keep basic annotations here that don't change between environments; other annotations will be passed in at runtime through the application.yml workflow
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
   hosts:
     - host: www.thegriffinfamily.link
       paths:

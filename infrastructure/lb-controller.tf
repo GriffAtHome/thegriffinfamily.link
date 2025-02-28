@@ -3,7 +3,10 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
   name        = "AWSLoadBalancerControllerIAMPolicy"
   description = "IAM policy for AWS Load Balancer Controller"
   
+  # Either update lb-controller-policy.json or use this inline policy
   policy = file("${path.module}/lb-controller-policy.json")
+  
+  # Add any missing permissions identified during troubleshooting
 }
 
 # IAM Role for Service Account (IRSA) for Load Balancer Controller
@@ -16,12 +19,12 @@ resource "aws_iam_role" "aws_load_balancer_controller" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/268F94D355FF1D7D71F48D4F22BE368B"
+          Federated = aws_iam_openid_connect_provider.eks.arn
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
           StringEquals = {
-            "oidc.eks.us-east-1.amazonaws.com/id/268F94D355FF1D7D71F48D4F22BE368B:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
+            "${replace(aws_eks_cluster.main.identity[0].oidc[0].issuer, "https://", "")}:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
           }
         }
       }
@@ -41,11 +44,11 @@ resource "helm_release" "aws_load_balancer_controller" {
   namespace  = "kube-system"
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
-  version    = "1.5.3"  # Specify desired chart version
+  version    = "1.7.1"  # Update to latest stable version
 
   set {
     name  = "clusterName"
-    value = "${local.project_name}-${local.environment}" # cluster name
+    value = aws_eks_cluster.main.name
   }
 
   set {
@@ -64,6 +67,7 @@ resource "helm_release" "aws_load_balancer_controller" {
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.aws_load_balancer_controller
+    aws_iam_role_policy_attachment.aws_load_balancer_controller,
+    aws_eks_node_group.main  # Make sure nodes are ready
   ]
 }
