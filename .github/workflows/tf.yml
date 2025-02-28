@@ -63,23 +63,31 @@ jobs:
       # Manual trigger Only: Plan - Dev
       - name: Terraform Plan (Dev)
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'plan-dev'
-        run: terraform plan -var-file="env/dev.tfvars"
+        run: terraform plan -var-file="env/dev.tfvars" 
+        env:
+          TF_VAR_argocd_admin_password: ${{ secrets.ARGOCD_ADMIN_PASSWORD }}
         working-directory: ./infrastructure
 
       # Manual and automatic trigger: Apply - Dev
       - name: Terraform Apply (Dev)
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'apply-dev' || (github.ref == 'refs/heads/dev' && github.event_name == 'push')
         run: terraform apply -var-file="env/dev.tfvars" -auto-approve
+        env:
+          TF_VAR_argocd_admin_password: ${{ secrets.ARGOCD_ADMIN_PASSWORD }}
         working-directory: ./infrastructure
 
       # Manual trigger: Plan - Prod
       - name: Terraform Plan (Prod)
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'plan-prod' 
         run: terraform plan -var-file="env/prod.tfvars"
+        env:
+          TF_VAR_argocd_admin_password: ${{ secrets.ARGOCD_ADMIN_PASSWORD }}
         working-directory: ./infrastructure
 
       # Manual and automatic trigger: Apply - Prod
       - name: Terraform Apply (Prod)
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'apply-prod' || (github.ref == 'refs/heads/main' && github.event_name == 'push')
         run: terraform apply -var-file="env/prod.tfvars" -auto-approve
+        env:
+          TF_VAR_argocd_admin_password: ${{ secrets.ARGOCD_ADMIN_PASSWORD }}
         working-directory: ./infrastructure
