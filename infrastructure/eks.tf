@@ -221,18 +221,6 @@ resource "aws_security_group_rule" "eks_nodes_ingress_control_plane" {
   type                     = "ingress"
 }
 
-# Update the worker node security group to allow traffic on port 8000
-resource "aws_security_group_rule" "allow_alb_to_flask" {
-  type                     = "ingress"
-  from_port                = 8000
-  to_port                  = 8000
-  protocol                 = "tcp"
-  security_group_id        = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
-  source_security_group_id = aws_security_group.alb.id  # Your ALB security group
-  description              = "Allow traffic from ALB to Flask app"
-}
-
-
 # Create a rule using the found security group
 resource "aws_security_group_rule" "allow_alb_to_flask" {
   type                     = "ingress"
@@ -246,7 +234,6 @@ resource "aws_security_group_rule" "allow_alb_to_flask" {
   
   description              = "Allow traffic from ALB to Flask app"
 }
-
 #data sources
 data "aws_caller_identity" "current" {}
 
