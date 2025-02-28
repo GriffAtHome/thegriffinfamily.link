@@ -51,3 +51,8 @@ output "argocd_server_url" {
   description = "URL for ArgoCD server"
   value       = "Use port-forwarding to access: kubectl port-forward svc/argocd-server -n argocd 8080:443"
 }
+
+output "argocd_admin_password" {
+  description = "Initial admin password for ArgoCD"
+  value       = var.argocd_admin_password
+}
