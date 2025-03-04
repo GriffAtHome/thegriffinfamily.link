@@ -15,8 +15,9 @@ resource "aws_acm_certificate" "cert" {
   )
 }
 
-# Create the DNS records to validate the certificate
+# Update the validation record references
 resource "aws_route53_record" "cert_validation" {
+  count   = var.skip_data_sources ? 0 : 1
   for_each = {
     for dvo in aws_acm_certificate.cert.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
@@ -25,7 +26,7 @@ resource "aws_route53_record" "cert_validation" {
     }
   }
 
-  zone_id = data.aws_route53_zone.main.zone_id
+  zone_id = data.aws_route53_zone.main[0].zone_id
   name    = each.value.name
   type    = each.value.type
   records = [each.value.record]

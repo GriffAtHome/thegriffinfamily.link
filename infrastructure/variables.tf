@@ -94,3 +94,9 @@ variable "argocd_admin_password" {
   sensitive   = true
   # No default - will be passed from environment
 }
+
+variable "skip_data_sources" {
+  description = "Set to true when destroying resources to skip data sources that might fail"
+  type        = bool
+  default     = false
+}

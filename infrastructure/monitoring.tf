@@ -1,5 +1,6 @@
 # Add CloudWatch metric alarm for port 8000 availability
 resource "aws_cloudwatch_metric_alarm" "flask_health" {
+  count             = var.skip_data_sources ? 0 : 1
   alarm_name          = "flask-app-health"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = "2"

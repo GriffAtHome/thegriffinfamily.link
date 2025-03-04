@@ -106,7 +106,7 @@ jobs:
       # Manual trigger: Destroy - Prod
       - name: Terraform Destroy (Prod)
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.operation == 'destroy-prod'
-        run: terraform destroy -var-file="env/prod.tfvars" -auto-approve
+        run: terraform destroy -var-file="env/prod.tfvars" -var="skip_data_sources=true" -auto-approve
         env:
           TF_VAR_argocd_admin_password: ${{ secrets.ARGOCD_ADMIN_PASSWORD }}
         working-directory: ./infrastructure
