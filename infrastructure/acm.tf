@@ -15,10 +15,9 @@ resource "aws_acm_certificate" "cert" {
   )
 }
 
-# Update the validation record references
+# Route53 record for certificate validation
 resource "aws_route53_record" "cert_validation" {
-  count   = var.skip_data_sources ? 0 : 1
-  for_each = {
+  for_each = var.skip_data_sources ? {} : {
     for dvo in aws_acm_certificate.cert.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
       record = dvo.resource_record_value

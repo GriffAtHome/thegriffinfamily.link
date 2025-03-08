@@ -47,11 +47,6 @@ EOF
 
   # Only create this when not destroying
   count = var.skip_data_sources ? 0 : 1
-  
-  # or use lifecycle to prevent destruction:
-  lifecycle {
-    prevent_destroy = !var.skip_data_sources
-  }
 }
 
 # Define output for ArgoCD URL
