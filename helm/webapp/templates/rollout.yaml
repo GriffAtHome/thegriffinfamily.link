@@ -21,8 +21,8 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}
-          image: {{ .Values.image }}
-          imagePullPolicy: Always
+          image: {{ .Values.image | quote }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
           ports:
             - name: http
               containerPort: 8000
@@ -52,6 +52,8 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
   strategy:
     canary:
+      stableService: {{ include "webapp.fullname" . }}-stable
+      canaryService: {{ include "webapp.fullname" . }}-canary
       analysis:
         templates:
           - templateName: success-rate
