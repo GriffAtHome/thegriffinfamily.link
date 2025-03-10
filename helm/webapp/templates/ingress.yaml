@@ -9,17 +9,29 @@ metadata:
     {{- if .Values.ingress.annotations }}
     {{- toYaml .Values.ingress.annotations | nindent 4 }}
     {{- end }}
-    # Add this annotation for Argo Rollouts traffic splitting support
-    alb.ingress.kubernetes.io/actions.weighted-routing: >
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: "30"
+    alb.ingress.kubernetes.io/healthcheck-path: /health/liveness
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/success-codes: "200"
+    alb.ingress.kubernetes.io/target-type: ip
+    # Add these annotations for Argo Rollouts support
+    alb.ingress.kubernetes.io/actions.{{ include "webapp.fullname" . }}-action: >
       {
-        "type":"weighted-forward",
-        "forwardConfig":{
-          "targetGroups":[
+        "type": "forward",
+        "forwardConfig": {
+          "targetGroups": [
             {
-              "weight":80
+              "serviceName": "{{ include "webapp.fullname" . }}-stable",
+              "servicePort": "80",
+              "weight": 100
             },
             {
-              "weight":20
+              "serviceName": "{{ include "webapp.fullname" . }}-canary",
+              "servicePort": "80",
+              "weight": 0
             }
           ]
         }

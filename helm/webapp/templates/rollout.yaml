@@ -73,3 +73,4 @@ spec:
         alb:
           ingress: {{ include "webapp.fullname" . }}
           servicePort: 80
+          rootService: {{ include "webapp.fullname" . }}-stable
