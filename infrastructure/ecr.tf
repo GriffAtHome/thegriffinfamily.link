@@ -2,6 +2,7 @@
 resource "aws_ecr_repository" "app" {
   name                 = "${local.project_name}-repo"
   image_tag_mutability = "MUTABLE"
+  force_delete         = true  # Needed to delete the repository when it's not empty (used during TF destroy)
 
   image_scanning_configuration {
     scan_on_push = true
