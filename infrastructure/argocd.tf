@@ -64,3 +64,4 @@ output "argocd_admin_password" {
   value       = var.argocd_admin_password
   sensitive = true
 }
+
