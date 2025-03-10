@@ -1,10 +1,3 @@
-# Reference an existing Route 53 zone
-data "aws_route53_zone" "main" {
-  count        = var.skip_data_sources ? 0 : 1
-  name         = "thegriffinfamily.link"
-  private_zone = false
-}
-
 # Add a record for the ALB managed by the AWS Load Balancer Controller
 resource "aws_route53_record" "www" {
   count   = var.skip_data_sources ? 0 : 1
