@@ -221,17 +221,34 @@ resource "aws_security_group_rule" "eks_nodes_ingress_control_plane" {
   type                     = "ingress"
 }
 
-# Create a rule using the found security group - make conditional
+# Create a placeholder security group for the ALB ingress
+resource "aws_security_group" "alb_ingress" {
+  name        = "${local.project_name}-alb-ingress"
+  description = "Security group for ALB ingress traffic"
+  vpc_id      = aws_vpc.main.id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.project_name}-alb-ingress"
+    }
+  )
+}
+
+# Allow traffic from this security group to the Flask app
 resource "aws_security_group_rule" "allow_alb_to_flask" {
-  count                    = var.skip_data_sources ? 0 : 1
   type                     = "ingress"
   from_port                = 8000
   to_port                  = 8000
   protocol                 = "tcp"
   security_group_id        = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
-  
-  # This should reference the first security group associated with the ALB
-  source_security_group_id = tolist(data.aws_lb.ingress_alb[0].security_groups)[0]
-  
+  source_security_group_id = aws_security_group.alb_ingress.id
   description              = "Allow traffic from ALB to Flask app"
 }
