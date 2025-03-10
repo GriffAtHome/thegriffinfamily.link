@@ -14,7 +14,7 @@ spec:
         address: http://prometheus-server.prometheus.svc.cluster.local:80
         query: |
           sum(rate(
-            http_requests_total{service="{{args.service-name}}",status=~"2.*"}[5m])
+            http_requests_total{service="{{ "{{args.service-name}}" }}",status=~"2.*"}[5m])
           ) 
           /
           sum(rate(
