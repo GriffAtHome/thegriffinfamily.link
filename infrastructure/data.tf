@@ -10,14 +10,4 @@ data "aws_route53_zone" "main" {
   private_zone = false
 }
 
-# Direct use of skip_data_sources for actual data sources
-data "aws_eks_cluster" "cluster" {
-  count = var.skip_data_sources ? 0 : 1
-  name  = local.eks_cluster_name
-}
-
-data "aws_lb" "ingress_alb" {
-  count = var.skip_data_sources ? 0 : 1
-  name  = local.alb_name
-}
 
