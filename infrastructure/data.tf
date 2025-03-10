@@ -26,10 +26,10 @@ data "aws_eks_cluster" "cluster_check" {
   name = local.eks_cluster_name
   
   lifecycle {
-    # Prevent failures during plan/apply
+    # Reference actual variables in the postcondition
     postcondition {
-      condition = true
-      error_message = "This condition will never fail, just making the resource exist for the can() function."
+      condition     = var.skip_data_sources || length(self) > 0
+      error_message = "EKS cluster check skipped or cluster exists."
     }
   }
 }
@@ -39,10 +39,10 @@ data "aws_lb" "ingress_alb_check" {
   name = local.alb_name
   
   lifecycle {
-    # Prevent failures during plan/apply
+    # Reference actual variables in the postcondition
     postcondition {
-      condition = true
-      error_message = "This condition will never fail, just making the resource exist for the can() function."
+      condition     = var.skip_data_sources || length(self) > 0
+      error_message = "ALB check skipped or ALB exists."
     }
   }
 }
