@@ -18,5 +18,5 @@ spec:
           ) 
           /
           sum(rate(
-            http_requests_total{service="{{args.service-name}}"}[5m])
+            http_requests_total{service="{{ "{{args.service-name}}" }}"}[5m])
           )
