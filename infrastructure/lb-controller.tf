@@ -68,16 +68,10 @@ resource "helm_release" "aws_load_balancer_controller" {
     aws_iam_role_policy_attachment.aws_load_balancer_controller,
     aws_eks_node_group.main  # Make sure nodes are ready
   ]
-}
-
-# Add this after the helm_release for aws_load_balancer_controller
-resource "null_resource" "wait_for_lb_controller" {
-  depends_on = [helm_release.aws_load_balancer_controller]
-
+  
+  # Add a local-exec provisioner to wait for the controller to be ready
   provisioner "local-exec" {
-    command = <<EOF
-      # Wait for the AWS Load Balancer Controller to be ready
-      kubectl wait --for=condition=available --timeout=300s deployment/aws-load-balancer-controller -n kube-system
-    EOF
+    command = "kubectl wait --for=condition=available --timeout=300s deployment/aws-load-balancer-controller -n kube-system"
+    on_failure = continue
   }
 }

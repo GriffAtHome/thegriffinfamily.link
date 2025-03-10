@@ -37,7 +37,10 @@ resource "helm_release" "prometheus" {
     value = "true"
   }
 
+  timeout = 600  # Increase timeout to 10 minutes
+
   depends_on = [
-    aws_eks_node_group.main
+    aws_eks_node_group.main,
+    helm_release.aws_load_balancer_controller
   ]
 }
