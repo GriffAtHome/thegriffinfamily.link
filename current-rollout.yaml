@@ -1,0 +1,156 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"argoproj.io/v1alpha1","kind":"Rollout","metadata":{"annotations":{},"labels":{"app.kubernetes.io/instance":"webapp","app.kubernetes.io/managed-by":"Helm","app.kubernetes.io/name":"webapp","app.kubernetes.io/version":"1.0","argocd.argoproj.io/instance":"webapp","helm.sh/chart":"webapp-0.1.0"},"name":"webapp","namespace":"default"},"spec":{"replicas":2,"revisionHistoryLimit":5,"selector":{"matchLabels":{"app":"webapp"}},"strategy":{"canary":{"analysis":{"args":[{"name":"service-name","value":"webapp"}],"templates":[{"templateName":"success-rate"}]},"canaryService":"webapp-canary","stableService":"webapp-stable","steps":[{"setWeight":20},{"pause":{"duration":"30s"}},{"setWeight":40},{"pause":{"duration":"30s"}},{"setWeight":60},{"pause":{"duration":"30s"}},{"setWeight":80},{"pause":{"duration":"30s"}}],"trafficRouting":{"alb":{"annotationPrefix":"alb.ingress.kubernetes.io","ingress":"webapp","rootService":"webapp-stable","serviceName":"traffic-split","servicePort":80}}}},"template":{"metadata":{"annotations":{"prometheus.io/path":"/metrics","prometheus.io/port":"8000","prometheus.io/scrape":"true"},"labels":{"app":"webapp"}},"spec":{"containers":[{"command":["gunicorn","--workers","$(GUNICORN_WORKERS)","--bind","0.0.0.0:8000","app:app"],"env":[{"name":"GUNICORN_WORKERS","value":"2"}],"image":"251374076386.dkr.ecr.us-east-1.amazonaws.com/thegriffinfamily-link-resume-repo:8d9078549be8c7b2d92a6d51eade5747665dd9d6","imagePullPolicy":null,"livenessProbe":{"httpGet":{"path":"/health/liveness","port":"http"},"initialDelaySeconds":10,"periodSeconds":30},"name":"webapp","ports":[{"containerPort":8000,"name":"http"}],"readinessProbe":{"httpGet":{"path":"/health/readiness","port":"http"},"initialDelaySeconds":5,"periodSeconds":10},"resources":{"limits":{"cpu":"500m","memory":"256Mi"},"requests":{"cpu":"100m","memory":"128Mi"}}}]}}}}
+    rollout.argoproj.io/revision: "2"
+  creationTimestamp: "2025-03-11T01:43:22Z"
+  generation: 3
+  labels:
+    app.kubernetes.io/instance: webapp
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: webapp
+    app.kubernetes.io/version: "1.0"
+    argocd.argoproj.io/instance: webapp
+    helm.sh/chart: webapp-0.1.0
+  name: webapp
+  namespace: default
+  resourceVersion: "266624"
+  uid: 0df738d1-c63b-4c83-b722-f19abf0438fa
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: webapp
+  strategy:
+    canary:
+      analysis:
+        analysisRunMetadata: {}
+        args:
+        - name: service-name
+          value: webapp
+        templates:
+        - templateName: success-rate
+      canaryService: webapp-canary
+      stableService: webapp-stable
+      steps:
+      - setWeight: 20
+      - pause:
+          duration: 30s
+      - setWeight: 40
+      - pause:
+          duration: 30s
+      - setWeight: 60
+      - pause:
+          duration: 30s
+      - setWeight: 80
+      - pause:
+          duration: 30s
+      trafficRouting:
+        alb:
+          annotationPrefix: alb.ingress.kubernetes.io
+          ingress: webapp
+          rootService: webapp-stable
+          servicePort: 80
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8000"
+        prometheus.io/scrape: "true"
+      labels:
+        app: webapp
+    spec:
+      containers:
+      - command:
+        - gunicorn
+        - --workers
+        - $(GUNICORN_WORKERS)
+        - --bind
+        - 0.0.0.0:8000
+        - app:app
+        env:
+        - name: GUNICORN_WORKERS
+          value: "2"
+        image: 251374076386.dkr.ecr.us-east-1.amazonaws.com/thegriffinfamily-link-resume-repo:8d9078549be8c7b2d92a6d51eade5747665dd9d6
+        livenessProbe:
+          httpGet:
+            path: /health/liveness
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        name: webapp
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /health/readiness
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 500m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+status:
+  HPAReplicas: 2
+  availableReplicas: 2
+  blueGreen: {}
+  canary:
+    weights:
+      canary:
+        podTemplateHash: 66477b68b8
+        serviceName: webapp-canary
+        weight: 0
+      stable:
+        podTemplateHash: 66477b68b8
+        serviceName: webapp-stable
+        weight: 100
+  conditions:
+  - lastTransitionTime: "2025-03-11T01:52:44Z"
+    lastUpdateTime: "2025-03-11T01:52:44Z"
+    message: RolloutCompleted
+    reason: RolloutCompleted
+    status: "True"
+    type: Completed
+  - lastTransitionTime: "2025-03-11T01:52:44Z"
+    lastUpdateTime: "2025-03-11T01:52:44Z"
+    message: Rollout is paused
+    reason: RolloutPaused
+    status: "False"
+    type: Paused
+  - lastTransitionTime: "2025-03-11T09:06:34Z"
+    lastUpdateTime: "2025-03-11T09:06:34Z"
+    message: Rollout is healthy
+    reason: RolloutHealthy
+    status: "True"
+    type: Healthy
+  - lastTransitionTime: "2025-03-11T01:52:44Z"
+    lastUpdateTime: "2025-03-11T09:06:34Z"
+    message: ReplicaSet "webapp-66477b68b8" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  - lastTransitionTime: "2025-03-11T09:06:34Z"
+    lastUpdateTime: "2025-03-11T09:06:34Z"
+    message: Rollout has minimum availability
+    reason: AvailableReason
+    status: "True"
+    type: Available
+  currentPodHash: 66477b68b8
+  currentStepHash: 5f96b79f4f
+  currentStepIndex: 8
+  observedGeneration: "3"
+  phase: Healthy
+  readyReplicas: 2
+  replicas: 2
+  selector: app=webapp
+  stableRS: 66477b68b8
+  updatedReplicas: 2
