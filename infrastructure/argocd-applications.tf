@@ -12,6 +12,14 @@ resource "kubernetes_manifest" "argocd_webapp" {
         repoURL        = "https://github.com/GriffAtHome/thegriffinfamily.link.git"
         targetRevision = "main"
         path           = "helm/webapp"
+        helm = {
+          parameters = [
+            {
+              name  = "certificateARN"
+              value = aws_acm_certificate.cert.arn
+            }
+          ]
+        }
       }
       destination = {
         server    = "https://kubernetes.default.svc"
@@ -27,5 +35,5 @@ resource "kubernetes_manifest" "argocd_webapp" {
     }
   }
 
-  depends_on = [helm_release.argocd]
+  depends_on = [helm_release.argocd, aws_acm_certificate_validation.cert]
 }
