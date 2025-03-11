@@ -72,5 +72,7 @@ spec:
       trafficRouting:
         alb:
           ingress: {{ include "webapp.fullname" . }}
-          servicePort: 80
+          servicePort: use-annotation
           rootService: {{ include "webapp.fullname" . }}-stable
+          annotationPrefix: alb.ingress.kubernetes.io
+          serviceName: traffic-split

@@ -17,8 +17,8 @@ metadata:
     alb.ingress.kubernetes.io/ssl-redirect: "443"
     alb.ingress.kubernetes.io/success-codes: "200"
     alb.ingress.kubernetes.io/target-type: ip
-    # Add these annotations for Argo Rollouts support
-    alb.ingress.kubernetes.io/actions.{{ include "webapp.fullname" . }}-action: >
+    # This specific format is required for ALB to work with Argo Rollouts
+    alb.ingress.kubernetes.io/actions.traffic-split: |
       {
         "type": "forward",
         "forwardConfig": {
@@ -41,22 +41,31 @@ spec:
   ingressClassName: {{ .Values.ingress.className }}
   {{- end }}
   rules:
-    {{- range .Values.ingress.hosts }}
-    - host: {{ .host | quote }}
+    - host: "www.thegriffinfamily.link"
       http:
         paths:
-          {{- range .paths }}
-          - path: {{ .path }}
-            pathType: {{ .pathType }}
+          # This path must exactly match the rootService configuration
+          - path: /
+            pathType: Prefix
+            backend:
+              # Use the traffic-split action
+              service:
+                name: traffic-split
+                port:
+                  name: use-annotation
+          # Add a direct path to the stable service for health checks/etc
+          - path: /health
+            pathType: Prefix
             backend:
               service:
-                name: {{ include "webapp.fullname" $ }}
+                name: {{ include "webapp.fullname" . }}-stable
                 port:
-                  number: {{ $.Values.service.port }}
-          {{- end }}
-    {{- end }}
+                  number: 80
   {{- if .Values.ingress.tls }}
   tls:
+    - hosts:
+        - "www.thegriffinfamily.link"
+      secretName: tls-secret
     {{- range .Values.ingress.tls }}
     - hosts:
         {{- range .hosts }}
