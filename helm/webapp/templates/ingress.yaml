@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "webapp.labels" . | nindent 4 }}
   annotations:
-    # Fix the health check configuration
+    # Health check configuration - revert to what was working
     alb.ingress.kubernetes.io/healthcheck-path: "/health/liveness"
     alb.ingress.kubernetes.io/healthcheck-port: "traffic-port"
     alb.ingress.kubernetes.io/healthcheck-protocol: "HTTP"
@@ -19,7 +19,7 @@ metadata:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/ssl-redirect: "443"
     alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.certificateARN | default "" }} #dynamically reference the ACM certificate in your Kubernetes ingress while supporting complete redeploys
+    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.certificateARN | default "" }}
     # This specific format is required for ALB to work with Argo Rollouts
     alb.ingress.kubernetes.io/actions.traffic-split: |
       {
@@ -36,8 +36,8 @@ metadata:
       }
     alb.ingress.kubernetes.io/tags: service=webapp,environment={{ .Values.environment | default "dev" }}
     kubernetes.io/ingress.class: alb
-    # Force the ingress controller to recreate everything
-    alb.ingress.kubernetes.io/force-reconcile: "{{ randAlphaNum 10 }}"
+    # Force reconcile with a new value
+    alb.ingress.kubernetes.io/force-reconcile: "{{ now | unixEpoch }}"
     # Add explicit host conditions for traffic-split
     alb.ingress.kubernetes.io/conditions.traffic-split: |
       [{"field":"host-header","hostHeaderConfig":{"values":["www.{{ .Values.domain | default "thegriffinfamily.link" }}"]}}]
@@ -63,17 +63,9 @@ spec:
                 name: webapp
                 port:
                   number: 80
-          # Health check path
+          # Health check path - just keep one health path, not multiple
           - path: /health
             pathType: Prefix
-            backend:
-              service:
-                name: webapp
-                port:
-                  number: 80
-          # Health check path - update to the specific endpoint
-          - path: /health/liveness
-            pathType: Exact
             backend:
               service:
                 name: webapp
