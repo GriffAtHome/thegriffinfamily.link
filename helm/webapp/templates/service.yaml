@@ -5,11 +5,10 @@ metadata:
   labels:
     {{- include "webapp.labels" . | nindent 4 }}
 spec:
-  type: ClusterIP
+  selector:
+    app: webapp
   ports:
     - port: 80
       targetPort: 8000
       protocol: TCP
       name: http
-  selector:
-    app: webapp
