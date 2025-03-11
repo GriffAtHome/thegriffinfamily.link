@@ -42,7 +42,7 @@ IMPORTANT: After the ALB is created, update the Route53 record manually:
            "Type": "A",
            "AliasTarget": {
              "HostedZoneId": "Z35SXDOTRQ7X7K",
-             "DNSName": "REPLACE_WITH_ALB_DNS_NAME",
+             "DNSName": "thegriffinfamily.link",
              "EvaluateTargetHealth": true
            }
          }
