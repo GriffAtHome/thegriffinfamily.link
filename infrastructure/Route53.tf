@@ -24,30 +24,92 @@ resource "aws_route53_record" "www" {
   }
 }
 
-# Output instructions for manually updating the Route53 record
-output "route53_update_instructions" {
-  value = <<EOT
-IMPORTANT: After the ALB is created, update the Route53 record manually:
+# Dynamically find and update the ALB DNS name
+resource "null_resource" "route53_alb_update" {
+  triggers = {
+    always_run = timestamp()
+  }
 
-1. Wait for the ALB to be created (might take 5-15 minutes)
-2. Run: aws elbv2 describe-load-balancers --query "LoadBalancers[*].DNSName" --output text
-3. Find the ALB that starts with "k8s-default-webapp"
-4. Update the Route53 record: 
-   aws route53 change-resource-record-sets --hosted-zone-id ${data.aws_route53_zone.main[0].zone_id} --change-batch '{
-     "Changes": [
-       {
-         "Action": "UPSERT",
-         "ResourceRecordSet": {
-           "Name": "www.${data.aws_route53_zone.main[0].name}",
-           "Type": "A",
-           "AliasTarget": {
-             "HostedZoneId": "Z35SXDOTRQ7X7K",
-             "DNSName": "thegriffinfamily.link",
-             "EvaluateTargetHealth": true
-           }
-         }
-       }
-     ]
-   }'
-EOT
+  provisioner "local-exec" {
+    command = <<-EOT
+      # Wait for ALB to be created with specific tags
+      echo "Waiting for ALB to be created by AWS Load Balancer Controller..."
+      
+      MAX_ATTEMPTS=40
+      DELAY=30
+      attempt=1
+      
+      while [ $attempt -le $MAX_ATTEMPTS ]; do
+        echo "Attempt $attempt/$MAX_ATTEMPTS"
+        
+        # Look for ALB with the correct tags
+        load_balancers=$(aws elbv2 describe-load-balancers --query 'LoadBalancers[*].LoadBalancerArn' --output text)
+        
+        if [ ! -z "$load_balancers" ]; then
+          found=false
+          
+          for lb in $load_balancers; do
+            tags=$(aws elbv2 describe-tags --resource-arns $lb)
+            
+            # Check if this is our ALB by looking for specific tags
+            is_webapp=$(echo $tags | grep -E 'ingress.k8s.aws\/stack.*webapp')
+            
+            if [ ! -z "$is_webapp" ]; then
+              echo "Found ALB: $lb"
+              
+              # Get the DNS name of the ALB
+              lb_dns=$(aws elbv2 describe-load-balancers --load-balancer-arns $lb --query 'LoadBalancers[0].DNSName' --output text)
+              lb_zone_id=$(aws elbv2 describe-load-balancers --load-balancer-arns $lb --query 'LoadBalancers[0].CanonicalHostedZoneId' --output text)
+              
+              echo "ALB DNS: $lb_dns, Zone ID: $lb_zone_id"
+              
+              # Update the Route53 record
+              aws route53 change-resource-record-sets --hosted-zone-id ${data.aws_route53_zone.main[0].zone_id} --change-batch '{
+                "Changes": [
+                  {
+                    "Action": "UPSERT",
+                    "ResourceRecordSet": {
+                      "Name": "www.${data.aws_route53_zone.main[0].name}",
+                      "Type": "A",
+                      "AliasTarget": {
+                        "HostedZoneId": "'$lb_zone_id'",
+                        "DNSName": "'$lb_dns'",
+                        "EvaluateTargetHealth": true
+                      }
+                    }
+                  }
+                ]
+              }'
+              
+              if [ $? -eq 0 ]; then
+                echo "Successfully updated Route53 record"
+                found=true
+                break
+              else
+                echo "Failed to update Route53 record"
+              fi
+            fi
+          done
+          
+          if [ "$found" = true ]; then
+            break
+          fi
+        fi
+        
+        echo "ALB not found or not ready yet. Waiting ${DELAY}s before next attempt..."
+        sleep $DELAY
+        attempt=$((attempt + 1))
+      done
+      
+      if [ $attempt -gt $MAX_ATTEMPTS ]; then
+        echo "Timed out waiting for ALB creation"
+        # Don't fail the Terraform run
+      fi
+    EOT
+  }
+  
+  depends_on = [kubernetes_manifest.argocd_webapp]
 }
+
+# Keep the existing aws_route53_record with lifecycle { ignore_changes = [alias] }
+# The null_resource will update it with the correct values
