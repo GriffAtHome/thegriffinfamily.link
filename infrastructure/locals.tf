@@ -15,4 +15,7 @@ locals {
   # Resource names and identifiers
   eks_cluster_name = "${local.project_name}-${local.environment}"
   alb_name = "k8s-default-webappne-338b082b37"
+  
+  # Add a static fallback ALB name pattern
+  alb_name_prefix = "k8s-default-webapp"
 }
