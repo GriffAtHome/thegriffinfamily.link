@@ -6,9 +6,6 @@ metadata:
   labels:
     {{- include "webapp.labels" . | nindent 4 }}
   annotations:
-    {{- if .Values.ingress.annotations }}
-    {{- toYaml .Values.ingress.annotations | nindent 4 }}
-    {{- end }}
     alb.ingress.kubernetes.io/healthcheck-interval-seconds: "30"
     alb.ingress.kubernetes.io/healthcheck-path: /health/liveness
     alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
@@ -37,9 +34,6 @@ metadata:
         }
       }
 spec:
-  {{- if .Values.ingress.className }}
-  ingressClassName: {{ .Values.ingress.className }}
-  {{- end }}
   rules:
     - host: "www.thegriffinfamily.link"
       http:
@@ -52,7 +46,7 @@ spec:
               service:
                 name: traffic-split
                 port:
-                  name: use-annotation
+                  number: 80
           # Add a direct path to the stable service for health checks/etc
           - path: /health
             pathType: Prefix
@@ -61,17 +55,8 @@ spec:
                 name: {{ include "webapp.fullname" . }}-stable
                 port:
                   number: 80
-  {{- if .Values.ingress.tls }}
   tls:
     - hosts:
         - "www.thegriffinfamily.link"
       secretName: tls-secret
-    {{- range .Values.ingress.tls }}
-    - hosts:
-        {{- range .hosts }}
-        - {{ . | quote }}
-        {{- end }}
-      secretName: {{ .secretName | default "tls-secret" }}
-    {{- end }}
-  {{- end }}
 {{- end }}
