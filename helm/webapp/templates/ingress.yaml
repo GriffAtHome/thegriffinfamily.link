@@ -22,14 +22,9 @@ metadata:
         "forwardConfig": {
           "targetGroups": [
             {
-              "serviceName": "{{ include "webapp.fullname" . }}-stable",
+              "serviceName": "webapp",
               "servicePort": "80",
               "weight": 100
-            },
-            {
-              "serviceName": "{{ include "webapp.fullname" . }}-canary",
-              "servicePort": "80",
-              "weight": 0
             }
           ]
         }
@@ -60,12 +55,12 @@ spec:
                 name: traffic-split
                 port:
                   number: 80
-          # Add a direct path to the stable service for health checks/etc
-          - path: /health
-            pathType: Prefix
+          # Update to match the path that actually works
+          - path: /health/liveness
+            pathType: Exact
             backend:
               service:
-                name: {{ include "webapp.fullname" . }}-stable
+                name: webapp
                 port:
                   number: 80
   tls:
