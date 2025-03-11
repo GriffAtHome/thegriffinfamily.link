@@ -19,6 +19,7 @@ resource "aws_subnet" "public_1" {
     Name = "public-subnet-1"
     "kubernetes.io/role/elb" = "1"
     "kubernetes.io/cluster/${local.eks_cluster_name}" = "owned"
+    "elbv2.k8s.aws/cluster" = "true" 
   }
 }
 
@@ -32,6 +33,7 @@ resource "aws_subnet" "public_2" {
     Name = "public-subnet-2"
     "kubernetes.io/role/elb" = "1"
     "kubernetes.io/cluster/${local.eks_cluster_name}" = "owned"
+    "elbv2.k8s.aws/cluster" = "true"
   }
 }
 
