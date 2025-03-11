@@ -40,7 +40,7 @@ resource "null_resource" "route53_alb_update" {
       attempt=1
       
       while [ $attempt -le $MAX_ATTEMPTS ]; do
-        echo "Attempt $attempt/$MAX_ATTEMPTS"
+        echo "Attempt $${attempt}/$${MAX_ATTEMPTS}"
         
         # Look for ALB with the correct tags
         load_balancers=$(aws elbv2 describe-load-balancers --query 'LoadBalancers[*].LoadBalancerArn' --output text)
@@ -96,7 +96,7 @@ resource "null_resource" "route53_alb_update" {
           fi
         fi
         
-        echo "ALB not found or not ready yet. Waiting ${DELAY}s before next attempt..."
+        echo "ALB not found or not ready yet. Waiting $${DELAY}s before next attempt..."
         sleep $DELAY
         attempt=$((attempt + 1))
       done
