@@ -26,6 +26,7 @@ spec:
           ports:
             - name: http
               containerPort: 8000
+              protocol: TCP
           command:
             - "gunicorn"
             - "--workers"
@@ -74,5 +75,6 @@ spec:
           ingress: {{ include "webapp.fullname" . }}
           servicePort: 80
           rootService: {{ include "webapp.fullname" . }}-stable
-          annotationPrefix: alb.ingress.kubernetes.io
+          annotationPrefix: alb.ingress.kub
+          serviceName: traffic-spliternetes.io
           serviceName: traffic-split
