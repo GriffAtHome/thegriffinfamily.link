@@ -37,9 +37,12 @@ metadata:
     alb.ingress.kubernetes.io/tags: service=webapp,environment={{ .Values.environment | default "dev" }}
     alb.ingress.kubernetes.io/group.name: webapp
     kubernetes.io/ingress.class: alb
+    # Force reconciliation to update listener rules
+    alb.ingress.kubernetes.io/force-reconcile: "true"
 spec:
+  ingressClassName: alb
   rules:
-    - host: "www.thegriffinfamily.link"
+    - host: www.{{ .Values.domain | default "thegriffinfamily.link" }}
       http:
         paths:
           # This path must exactly match the rootService configuration
@@ -61,6 +64,6 @@ spec:
                   number: 80
   tls:
     - hosts:
-        - "www.thegriffinfamily.link"
+        - www.{{ .Values.domain | default "thegriffinfamily.link" }}
       secretName: tls-secret
 {{- end }}

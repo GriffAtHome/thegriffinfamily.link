@@ -32,9 +32,7 @@ resource "null_resource" "route53_alb_update" {
 
   provisioner "local-exec" {
     command = <<-EOT
-      # Wait for ALB to be created with specific tags
-      echo "Waiting for ALB to be created by AWS Load Balancer Controller..."
-      
+      echo "Starting Route53 DNS update at $(date)"
       MAX_ATTEMPTS=40
       DELAY=30
       attempt=1
@@ -63,30 +61,35 @@ resource "null_resource" "route53_alb_update" {
               
               echo "ALB DNS: $lb_dns, Zone ID: $lb_zone_id"
               
-              # Update the Route53 record
-              aws route53 change-resource-record-sets --hosted-zone-id ${data.aws_route53_zone.main[0].zone_id} --change-batch '{
-                "Changes": [
-                  {
-                    "Action": "UPSERT",
-                    "ResourceRecordSet": {
-                      "Name": "www.${data.aws_route53_zone.main[0].name}",
-                      "Type": "A",
-                      "AliasTarget": {
-                        "HostedZoneId": "'$lb_zone_id'",
-                        "DNSName": "'$lb_dns'",
-                        "EvaluateTargetHealth": true
-                      }
-                    }
-                  }
-                ]
-              }'
+              # Create a temporary JSON file for the change batch
+              cat > /tmp/route53-change.json << EOF
+{
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "www.${data.aws_route53_zone.main[0].name}.",
+        "Type": "A",
+        "AliasTarget": {
+          "HostedZoneId": "$lb_zone_id",
+          "DNSName": "$lb_dns.",
+          "EvaluateTargetHealth": true
+        }
+      }
+    }
+  ]
+}
+EOF
               
+              # Update the Route53 record
+              aws route53 change-resource-record-sets --hosted-zone-id ${data.aws_route53_zone.main[0].zone_id} --change-batch file:///tmp/route53-change.json
               if [ $? -eq 0 ]; then
-                echo "Successfully updated Route53 record"
+                echo "Successfully updated Route53 record at $(date)"
                 found=true
                 break
               else
                 echo "Failed to update Route53 record"
+                cat /tmp/route53-change.json
               fi
             fi
           done
@@ -100,11 +103,6 @@ resource "null_resource" "route53_alb_update" {
         sleep $DELAY
         attempt=$((attempt + 1))
       done
-      
-      if [ $attempt -gt $MAX_ATTEMPTS ]; then
-        echo "Timed out waiting for ALB creation"
-        # Don't fail the Terraform run
-      fi
     EOT
   }
   
