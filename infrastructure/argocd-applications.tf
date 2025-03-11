@@ -35,5 +35,11 @@ resource "kubernetes_manifest" "argocd_webapp" {
     }
   }
 
+  # Use the Terraform Kubernetes provider to manage the resource
+  field_manager {
+    name            = "terraform"
+    force_conflicts = true
+  }
+
   depends_on = [helm_release.argocd, aws_acm_certificate_validation.cert]
 }
