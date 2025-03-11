@@ -6,8 +6,9 @@ metadata:
   labels:
     {{- include "webapp.labels" . | nindent 4 }}
   annotations:
-    alb.ingress.kubernetes.io/healthcheck-interval-seconds: "30"
+    # Update the health check path to match the actual path
     alb.ingress.kubernetes.io/healthcheck-path: /health/liveness
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: "30"
     alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
     alb.ingress.kubernetes.io/scheme: internet-facing
@@ -65,6 +66,14 @@ spec:
           # Health check path
           - path: /health
             pathType: Prefix
+            backend:
+              service:
+                name: webapp
+                port:
+                  number: 80
+          # Health check path - update to the specific endpoint
+          - path: /health/liveness
+            pathType: Exact
             backend:
               service:
                 name: webapp
